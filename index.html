@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.6 - Fixed Slider Close Button & Z-Index Hierarchy 🚀</title>
+    <title>YouTube Trails v5.4.7 - Correct Logic: Chips Behind Slider When Expanded 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -230,7 +230,7 @@
         .yt-chips-bar {
             position: sticky;
             top: 60px;
-            z-index: 300; /* Higher z-index for tooltip visibility */
+            z-index: 300; /* Higher z-index when slider is collapsed */
             display: flex;
             gap: 8px;
             padding: 12px 16px;
@@ -238,6 +238,12 @@
             overflow-y: visible; /* Allow tooltips to show above */
             background: var(--yt-white);
             border-bottom: 1px solid var(--yt-divider);
+            transition: z-index 0.3s ease;
+        }
+
+        /* When slider is expanded, chips should be behind it */
+        .yt-chips-bar.slider-expanded {
+            z-index: 250; /* Lower z-index when slider is expanded */
         }
 
 
@@ -2487,7 +2493,7 @@
                 ];
 
                 return `
-                    <div class="yt-chips-bar">
+                    <div class="yt-chips-bar ${state.focusSliderExpanded ? 'slider-expanded' : ''}">
                         ${trailChips.map(chip => `
                             <button class="yt-chip has-tooltip-small ${state.activeTrail === chip.id ? 'active' : ''}" 
                                     onclick="selectTrail('${chip.id}')">
@@ -2506,7 +2512,7 @@
                 ];
 
                 return `
-                    <div class="yt-chips-bar">
+                    <div class="yt-chips-bar ${state.focusSliderExpanded ? 'slider-expanded' : ''}">
                         ${chips.map(chip => `
                             <button class="yt-chip ${state.selectedChip === chip.id ? 'active' : ''}" 
                                     onclick="selectChip('${chip.id}')">
