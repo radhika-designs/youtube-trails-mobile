@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.10 - Fixed DOM Structure: Slider & Chips as Siblings 🚀</title>
+    <title>YouTube Trails v5.4.11 - Restored Slider to Toggle Bar (Original Design) 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -238,6 +238,7 @@
             overflow-y: visible; /* Allow tooltips to show above */
             background: var(--yt-white);
             border-bottom: 1px solid var(--yt-divider);
+            margin-top: -1px; /* Overlap with slider when expanded */
         }
 
 
@@ -2341,7 +2342,6 @@
             return `
                 ${renderHeader()}
                 ${renderTrailToggleBar()}
-                ${state.isTrailFeed ? renderInlineSlider() : ''}
                 ${renderChipsBar()}
                 ${renderContent()}
                 ${renderBottomNav()}
@@ -2391,6 +2391,7 @@
                         <span class="toggle-label ${state.isTrailFeed ? 'active' : ''}">Trail Feed</span>
                         <div class="tooltip-small">🌐 Switch feed mode</div>
                     </div>
+                    ${state.isTrailFeed ? renderInlineSlider() : ''}
                 </div>
             `;
         }
