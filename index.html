@@ -1,0 +1,3751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>YouTube Trails v5.2 - Fixed Bubble Labels</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --yt-black: #0F0F0F;
+            --yt-white: #FFFFFF;
+            --yt-red: #FF0000;
+            --yt-blue: #065FD4;
+            --yt-text-primary: #0F0F0F;
+            --yt-text-secondary: #606060;
+            --yt-divider: #0000001a;
+            --yt-hover: #0000000d;
+            --yt-overlay: #000000cc;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f5f5f5;
+            color: var(--yt-text-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .phone-container {
+            max-width: 428px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: visible; /* Changed from hidden to allow tooltips outside */
+            height: 926px;
+            position: relative;
+        }
+
+        .app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--yt-white);
+            border-radius: 40px; /* Moved border radius here to maintain rounded corners */
+            overflow: hidden; /* Clip content but tooltips are outside .app */
+        }
+
+        /* YouTube Header */
+        .yt-header {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: var(--yt-white);
+            border-bottom: 1px solid var(--yt-divider);
+            z-index: 50; /* Lower than toggle bar and chips to not cover tooltips */
+        }
+
+        .yt-logo {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .yt-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--yt-red);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .yt-logo-icon.trail-mode {
+            background: var(--yt-blue);
+        }
+
+        .yt-logo-text {
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+        }
+
+        .yt-logo-trails {
+            font-size: 12px;
+            color: var(--yt-blue);
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        .yt-header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .yt-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            background: transparent;
+        }
+
+        .yt-icon-btn:hover {
+            background: var(--yt-hover);
+        }
+
+        .material-icons {
+            font-size: 24px;
+            color: var(--yt-text-primary);
+        }
+
+        /* Back Button Header */
+        .yt-header-back {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .yt-header-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        /* Trail Toggle Bar - Compact with Slider */
+        .trail-toggle-bar {
+            position: sticky;
+            top: 0;
+            z-index: 250; /* Increased from 100 to ensure tooltips show above other elements */
+            padding: 20px 16px 8px 16px; /* Increased top padding for tooltip */
+            background: var(--yt-white);
+            border-bottom: 1px solid var(--yt-divider);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            overflow: visible; /* Allow tooltip to show above */
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            position: relative; /* For tooltip positioning */
+        }
+
+        .toggle-label {
+            font-size: 13px;
+            color: var(--yt-text-secondary);
+            font-weight: 400;
+        }
+
+        .toggle-label.active {
+            color: var(--yt-text-primary);
+            font-weight: 500;
+        }
+
+        .yt-toggle {
+            position: relative;
+            width: 40px;
+            height: 24px;
+            background: #909090;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .yt-toggle.active {
+            background: var(--yt-blue);
+        }
+
+        .yt-toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .yt-toggle.active .yt-toggle-thumb {
+            left: 18px;
+        }
+
+        .create-trail-btn {
+            padding: 8px 16px;
+            background: var(--yt-blue);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .create-trail-btn:hover {
+            background: #0556c4;
+        }
+
+        /* Chips Bar - Sticky */
+        .yt-chips-bar {
+            position: sticky;
+            top: 60px;
+            z-index: 200;
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            overflow-y: visible; /* Allow tooltips to show above */
+            background: var(--yt-white);
+            border-bottom: 1px solid var(--yt-divider);
+        }
+
+        .yt-chips-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .yt-chip {
+            padding: 8px 12px;
+            background: #0000000d;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--yt-text-primary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+            position: relative; /* For tooltip positioning */
+        }
+
+        .yt-chip:hover {
+            background: #00000014;
+        }
+
+        .yt-chip.active {
+            background: var(--yt-text-primary);
+            color: var(--yt-white);
+        }
+
+        /* Content */
+        .yt-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: visible; /* Allow tooltips to show outside horizontally */
+            background: var(--yt-white);
+            position: relative; /* Create stacking context */
+        }
+
+        .yt-content::-webkit-scrollbar {
+            width: 0;
+        }
+
+        /* Banner */
+        .yt-banner {
+            margin: 12px 16px;
+            padding: 16px;
+            background: #E8F0FE;
+            border-radius: 12px;
+            border: 1px solid #C5D9F7;
+        }
+
+        .yt-banner-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .yt-banner-icon {
+            font-size: 28px;
+        }
+
+        .yt-banner-text h3 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .yt-banner-text p {
+            font-size: 13px;
+            color: var(--yt-text-secondary);
+            line-height: 18px;
+        }
+
+        .yt-banner-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .yt-banner-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .yt-banner-btn-primary {
+            background: var(--yt-blue);
+            color: white;
+        }
+
+        .yt-banner-btn-secondary {
+            background: transparent;
+            color: var(--yt-blue);
+        }
+
+        /* Collapsible Focus Slider - Inline */
+        .focus-slider-section {
+            background: #F9F9F9;
+            border-radius: 8px;
+            overflow: visible; /* Changed from hidden - allow tooltips to show */
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .focus-slider-section.inline-mode {
+            position: relative;
+        }
+
+        .focus-slider-section.expanded-mode {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 48px;
+            z-index: 260; /* Increased from 101 to ensure tooltips show */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: visible; /* Allow tooltips in expanded state */
+        }
+        
+        .focus-slider-collapsed {
+            padding: 6px 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            border-radius: 8px; /* Rounded corners */
+        }
+
+        .focus-slider-collapsed:hover {
+            background: #ececec;
+        }
+
+        .collapsed-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--yt-text-primary);
+            white-space: nowrap;
+        }
+
+        .collapsed-value {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--yt-blue);
+            white-space: nowrap;
+        }
+
+        .focus-slider-expanded {
+            padding: 16px 12px 12px 12px; /* Increased top padding for tooltips */
+            background: var(--yt-white);
+            position: relative; /* Create positioning context */
+            overflow: visible; /* Allow tooltips to show */
+        }
+
+        .focus-slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .focus-slider-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .focus-slider-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--yt-blue);
+        }
+
+        .slider-container {
+            position: relative;
+            margin: 12px 0;
+        }
+
+        .yt-slider {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #E0E0E0;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .yt-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--yt-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* Topic Bubbles */
+        .topic-bubbles {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .topic-bubble {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--yt-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .topic-bubble:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .topic-bubble.active {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Topic Map */
+        .topic-map {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 320px;
+            width: 90%;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .topic-map-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .topic-map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--yt-divider);
+        }
+
+        .topic-map-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .topic-map-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .topic-map-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        /* Search box */
+        .topic-search {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--yt-divider);
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Roboto', sans-serif;
+            margin-bottom: 16px;
+        }
+
+        .topic-search:focus {
+            outline: none;
+            border-color: var(--yt-blue);
+        }
+
+        /* Section headers */
+        .topic-section-header {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--yt-text-primary);
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--yt-divider);
+        }
+
+        /* Main topics - Radio style */
+        .main-topic-item {
+            padding: 10px 12px;
+            background: #F9F9F9;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .main-topic-item:hover {
+            background: #E8F0FE;
+        }
+
+        .main-topic-item.selected {
+            background: var(--yt-blue);
+            color: white;
+            border-color: var(--yt-blue);
+        }
+
+        .radio-indicator {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--yt-text-secondary);
+            border-radius: 50%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .main-topic-item.selected .radio-indicator {
+            border-color: white;
+        }
+
+        .main-topic-item.selected .radio-indicator::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* Meta tags - Checkbox style */
+        .meta-tags-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .meta-tag-item {
+            padding: 8px 10px;
+            background: #F9F9F9;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-tag-item:hover {
+            background: #E8F0FE;
+        }
+
+        .meta-tag-item.selected {
+            background: #E8F0FE;
+            border-color: var(--yt-blue);
+            color: var(--yt-blue);
+        }
+
+        .checkbox-indicator {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--yt-text-secondary);
+            border-radius: 3px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .meta-tag-item.selected .checkbox-indicator {
+            background: var(--yt-blue);
+            border-color: var(--yt-blue);
+        }
+
+        .meta-tag-item.selected .checkbox-indicator::after {
+            content: '✓';
+            position: absolute;
+            top: -2px;
+            left: 1px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .topic-connections {
+            padding: 12px;
+            background: #FFF9E6;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .topic-connections-title {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--yt-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .connection-item {
+            font-size: 11px;
+            color: var(--yt-text-secondary);
+            padding: 4px 0;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+
+        .slider-label-text {
+            font-size: 12px;
+            color: var(--yt-text-secondary);
+        }
+
+        .slider-description {
+            font-size: 12px;
+            color: var(--yt-text-secondary);
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* Video Card - Compact Design */
+        .yt-video-card {
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .yt-thumbnail-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .yt-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .yt-duration {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            padding: 2px 4px;
+            background: var(--yt-overlay);
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 2px;
+        }
+
+        .yt-trail-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            padding: 3px 6px;
+            color: white;
+            font-size: 10px;
+            font-weight: 500;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .yt-video-info {
+            padding: 8px 12px;
+            position: relative; /* Create positioning context for tooltips */
+            overflow: visible; /* Allow tooltips to show */
+        }
+
+        /* Tags at top */
+        .yt-video-tags {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+        }
+
+        .yt-tag {
+            padding: 2px 8px;
+            background: #0000000d;
+            border-radius: 12px;
+            font-size: 11px;
+            color: var(--yt-text-secondary);
+            font-weight: 400;
+        }
+
+        .yt-video-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .yt-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .yt-video-details {
+            flex: 1;
+        }
+
+        .yt-video-title {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 18px;
+            color: var(--yt-text-primary);
+            margin-bottom: 2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .yt-video-meta {
+            font-size: 11px;
+            color: var(--yt-text-secondary);
+            line-height: 16px;
+        }
+
+        /* Compact action buttons */
+        .yt-video-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 6px;
+            position: relative; /* Create positioning context for tooltips */
+            overflow: visible; /* Allow tooltips to show */
+        }
+
+        .yt-action-btn {
+            padding: 4px 10px;
+            background: transparent;
+            border: 1px solid var(--yt-divider);
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--yt-text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            white-space: nowrap;
+            position: relative; /* For tooltip positioning */
+        }
+
+        .yt-action-btn:hover {
+            background: var(--yt-hover);
+        }
+
+        .yt-action-btn .material-icons {
+            font-size: 16px;
+        }
+
+        /* Trail Card */
+        .yt-trail-card {
+            margin: 0 16px 16px 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .yt-trail-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .yt-trail-thumbnail {
+            width: 100%;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .yt-trail-info {
+            padding: 12px;
+            background: var(--yt-white);
+        }
+
+        .yt-trail-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            line-height: 20px;
+        }
+
+        .yt-trail-creator {
+            font-size: 12px;
+            color: var(--yt-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .yt-trail-stats {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--yt-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .yt-trail-dot {
+            width: 3px;
+            height: 3px;
+            background: var(--yt-text-secondary);
+            border-radius: 50%;
+        }
+
+        .yt-trail-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .yt-trail-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 1px solid var(--yt-divider);
+        }
+
+        .yt-focus-badge {
+            padding: 4px 8px;
+            background: var(--yt-blue);
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .yt-skill-badge {
+            font-size: 12px;
+            color: var(--yt-text-secondary);
+        }
+
+        /* Section Header */
+        .yt-section-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .yt-section-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Bottom Nav */
+        .yt-bottom-nav {
+            height: 56px;
+            display: flex;
+            background: var(--yt-white);
+            border-top: 1px solid var(--yt-divider);
+            position: relative; /* Create positioning context */
+            overflow: visible; /* Allow tooltips to show above */
+            z-index: 300; /* High z-index to ensure tooltips show above all content */
+        }
+
+        .yt-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            cursor: pointer;
+            color: var(--yt-text-secondary);
+            border: none;
+            background: transparent;
+            position: relative; /* For tooltip positioning */
+        }
+
+        .yt-nav-item.active {
+            color: var(--yt-text-primary);
+        }
+
+        .yt-nav-item .material-icons {
+            font-size: 24px;
+            color: inherit;
+        }
+
+        .yt-nav-label {
+            font-size: 10px;
+            font-weight: 400;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+            padding: 0 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--yt-text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--yt-divider);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--yt-blue);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Parked Video Item */
+        .parked-video-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--yt-divider);
+        }
+
+        .parked-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .parked-thumbnail {
+            width: 120px;
+            height: 68px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .parked-info {
+            flex: 1;
+        }
+
+        .parked-title {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 18px;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .parked-notes {
+            padding: 8px 12px;
+            background: #F9F9F9;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--yt-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        /* Summary Bar */
+        .summary-bar {
+            padding: 16px;
+            background: var(--yt-blue);
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .summary-item {
+            text-align: center;
+            color: white;
+        }
+
+        .summary-value {
+            font-size: 20px;
+            font-weight: 500;
+            display: block;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        /* Tabs */
+        .detail-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--yt-divider);
+            background: var(--yt-white);
+            position: relative;
+            overflow: visible;
+            z-index: 150;
+        }
+
+        .detail-tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--yt-text-secondary);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            position: relative; /* For tooltip positioning */
+        }
+
+        .detail-tab.active {
+            color: var(--yt-text-primary);
+            border-bottom-color: var(--yt-text-primary);
+        }
+
+        /* Trail Detail Header */
+        .trail-detail-header {
+            padding: 16px;
+            background: var(--yt-white);
+        }
+
+        .trail-detail-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .trail-detail-stats {
+            display: flex;
+            gap: 24px;
+            margin: 16px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 500;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--yt-text-secondary);
+        }
+
+        .trail-detail-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn-follow {
+            flex: 1;
+            padding: 10px;
+            background: var(--yt-red);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-follow.following {
+            background: #E0E0E0;
+            color: var(--yt-text-primary);
+        }
+
+        /* Settings List */
+        .settings-list {
+            padding: 16px 0;
+        }
+
+        .settings-item {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 1px solid var(--yt-divider);
+        }
+
+        .settings-item:hover {
+            background: var(--yt-hover);
+        }
+
+        .settings-label {
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .settings-value {
+            font-size: 14px;
+            color: var(--yt-text-secondary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            color: var(--yt-text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            color: var(--yt-text-secondary);
+        }
+
+        /* Fixed Submit Button */
+        .fixed-submit {
+            padding: 16px;
+            background: var(--yt-white);
+            border-top: 1px solid var(--yt-divider);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--yt-blue);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Onboarding Styles */
+        .onboarding-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .onboarding-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 360px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+        }
+
+        .onboarding-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .onboarding-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .onboarding-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--yt-text-primary);
+        }
+
+        .onboarding-subtitle {
+            font-size: 14px;
+            color: var(--yt-text-secondary);
+        }
+
+        .onboarding-content {
+            margin-bottom: 24px;
+        }
+
+        .onboarding-feature {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #F9F9F9;
+            border-radius: 8px;
+        }
+
+        .feature-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--yt-blue);
+            margin-bottom: 4px;
+        }
+
+        .feature-text {
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--yt-text-primary);
+        }
+
+        .onboarding-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .onboarding-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .onboarding-btn-primary {
+            background: var(--yt-blue);
+            color: white;
+        }
+
+        .onboarding-btn-secondary {
+            background: transparent;
+            color: var(--yt-blue);
+            border: 1px solid var(--yt-divider);
+        }
+
+        .onboarding-btn:hover {
+            opacity: 0.9;
+        }
+
+        .onboarding-progress {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #E0E0E0;
+            transition: background 0.3s;
+        }
+
+        .progress-dot.active {
+            background: var(--yt-blue);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .highlight-target {
+            animation: highlight-pulse 2s infinite;
+        }
+
+        @keyframes highlight-pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(6, 95, 212, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(6, 95, 212, 0);
+            }
+        }
+
+        /* Hover Tooltip System - Two Types */
+        
+        /* Type 1: Small Label Tooltips (for simple labels like nav, tabs) */
+        .has-tooltip-small {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip-small {
+            position: fixed; /* Use fixed for viewport-relative positioning */
+            background: var(--yt-text-primary);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 16px;
+            white-space: nowrap;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            pointer-events: none;
+            display: none;
+        }
+
+        .tooltip-small::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: var(--arrow-left, 50%);
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: var(--yt-text-primary);
+        }
+
+        /* Type 2: Large Feature Tooltips (centered with overlay) */
+        .has-tooltip-feature {
+            position: relative;
+            cursor: help;
+        }
+
+        .has-tooltip-feature:hover .tooltip-feature-overlay {
+            display: flex;
+        }
+
+        .tooltip-feature-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9997;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .tooltip-feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .tooltip-feature-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--yt-text-primary);
+        }
+
+        .tooltip-feature-text {
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--yt-text-secondary);
+        }
+
+        /* Feature Help Modal - Centered with Overlay */
+        .feature-help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .feature-help-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 360px;
+            width: 90%;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+            z-index: 9999;
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .feature-help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .feature-help-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--yt-text-primary);
+        }
+
+        .feature-help-text {
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--yt-text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="app" id="app"></div>
+    </div>
+
+    <script>
+        // Mock Data
+        const mockTrails = [
+            {
+                id: '1',
+                name: 'Web Development Mastery',
+                creator: 'TechExplorer',
+                description: 'A comprehensive trail covering modern web development from basics to advanced',
+                followerCount: 1247,
+                videoCount: 23,
+                tags: ['JavaScript', 'React', 'Node.js'],
+                focusRatio: 70,
+                skillLevel: 'Intermediate',
+                following: false,
+                notes: `📝 Trail Overview:\nThis trail takes you through modern web development, from fundamentals to advanced frameworks.\n\n🎯 Learning Path:\n1. Start with HTML/CSS basics to build solid foundations\n2. Master JavaScript ES6+ features\n3. Dive into React for building dynamic UIs\n4. Learn Node.js for backend development\n\n💡 Pro Tips:\n• Build projects after each section\n• Focus on understanding concepts\n• Join the community for support`,
+                color: '#667eea',
+                pathData: [
+                    { video: 'HTML & CSS Fundamentals', duration: '45:00', completed: true, date: '2025-09-15' },
+                    { video: 'JavaScript Basics to Advanced', duration: '3:20:00', completed: true, date: '2025-09-20' },
+                    { video: 'React Complete Guide', duration: '8:45:00', completed: true, date: '2025-10-01' },
+                    { video: 'Next.js 14 Tutorial', duration: '16:45', completed: false, date: null },
+                    { video: 'Node.js & Express', duration: '2:15:00', completed: false, date: null },
+                ],
+            },
+            {
+                id: '2',
+                name: 'Quantum Physics Explained',
+                creator: 'ScienceDaily',
+                description: 'Understanding quantum mechanics through visual explanations',
+                followerCount: 892,
+                videoCount: 15,
+                tags: ['Physics', 'Quantum', 'Science'],
+                focusRatio: 85,
+                skillLevel: 'Advanced',
+                following: true,
+                notes: `📝 Trail Overview:\nJourney through quantum physics, from classical foundations to cutting-edge applications.\n\n🎯 Prerequisites:\n• Basic classical physics understanding\n• Comfort with mathematical notation\n\n🔬 What You'll Learn:\n- Wave-particle duality\n- Quantum entanglement\n- Superposition principles\n- Real-world applications`,
+                color: '#2BA640',
+                pathData: [
+                    { video: 'Classical Physics Review', duration: '25:30', completed: true, date: '2025-08-25' },
+                    { video: 'Introduction to Quantum Mechanics', duration: '42:15', completed: true, date: '2025-09-01' },
+                    { video: 'Wave-Particle Duality', duration: '18:20', completed: false, date: null },
+                    { video: 'Quantum Entanglement', duration: '15:32', completed: false, date: null },
+                ],
+            },
+            {
+                id: '3',
+                name: 'Mediterranean Cooking',
+                creator: 'ChefMaria',
+                description: 'Authentic Mediterranean recipes from Greece, Italy, and Spain',
+                followerCount: 3421,
+                videoCount: 34,
+                tags: ['Cooking', 'Mediterranean', 'Recipes'],
+                focusRatio: 60,
+                skillLevel: 'Beginner',
+                following: false,
+                notes: `📝 Trail Overview:\nExplore the rich culinary traditions of the Mediterranean region.\n\n🍳 What You'll Master:\n• Italian pasta-making techniques\n• Greek salad and mezze\n• Spanish paella and tapas\n• Healthy Mediterranean diet\n\n🛒 Equipment Needed:\n- Basic kitchen tools\n- Good quality olive oil\n- Fresh ingredients`,
+                color: '#FF6B6B',
+                pathData: [
+                    { video: 'Mediterranean Diet Basics', duration: '12:08', completed: true, date: '2025-09-10' },
+                    { video: 'Perfect Greek Salad', duration: '8:30', completed: true, date: '2025-09-15' },
+                    { video: 'Fresh Pasta from Scratch', duration: '15:20', completed: true, date: '2025-09-22' },
+                    { video: 'Spanish Paella Recipe', duration: '16:45', completed: false, date: null },
+                    { video: 'Turkish Baklava', duration: '19:30', completed: false, date: null },
+                ],
+            },
+        ];
+
+        // Trail-specific videos
+        const trailVideos = {
+            'Web Development Mastery': [
+                {
+                    id: 'web1',
+                    title: 'Next.js 14 - What\'s New? Complete Tutorial',
+                    channel: 'Vercel',
+                    duration: '16:45',
+                    tags: ['Next.js', 'React', 'Web Dev'],
+                    views: '245K views',
+                    time: '2 days ago',
+                    trailRelevance: 'Web Development Mastery',
+                },
+                {
+                    id: 'web2',
+                    title: 'Advanced React Hooks - useCallback vs useMemo',
+                    channel: 'Web Dev Simplified',
+                    duration: '12:20',
+                    tags: ['React', 'Hooks', 'JavaScript'],
+                    views: '156K views',
+                    time: '1 week ago',
+                    trailRelevance: 'Web Development Mastery',
+                },
+                {
+                    id: 'web3',
+                    title: 'Building REST APIs with Node.js and Express',
+                    channel: 'Traversy Media',
+                    duration: '28:15',
+                    tags: ['Node.js', 'Express', 'API'],
+                    views: '892K views',
+                    time: '3 days ago',
+                    trailRelevance: 'Web Development Mastery',
+                },
+                {
+                    id: 'web4',
+                    title: 'CSS Grid Layout: Complete Guide',
+                    channel: 'Kevin Powell',
+                    duration: '22:40',
+                    tags: ['CSS', 'Grid', 'Layout'],
+                    views: '421K views',
+                    time: '5 days ago',
+                    trailRelevance: 'Web Development Mastery',
+                },
+                {
+                    id: 'web5',
+                    title: 'TypeScript for JavaScript Developers',
+                    channel: 'Academind',
+                    duration: '18:55',
+                    tags: ['TypeScript', 'JavaScript'],
+                    views: '678K views',
+                    time: '1 day ago',
+                    trailRelevance: 'Web Development Mastery',
+                },
+            ],
+            'Quantum Physics Explained': [
+                {
+                    id: 'sci1',
+                    title: 'Quantum Entanglement Explained Simply',
+                    channel: 'PBS Space Time',
+                    duration: '15:32',
+                    tags: ['Quantum', 'Physics', 'Science'],
+                    views: '1.2M views',
+                    time: '2 weeks ago',
+                    trailRelevance: 'Quantum Physics Explained',
+                },
+                {
+                    id: 'sci2',
+                    title: 'Schrödinger\'s Cat - The Paradox Explained',
+                    channel: 'Veritasium',
+                    duration: '14:18',
+                    tags: ['Quantum', 'Paradox', 'Science'],
+                    views: '2.4M views',
+                    time: '3 days ago',
+                    trailRelevance: 'Quantum Physics Explained',
+                },
+                {
+                    id: 'sci3',
+                    title: 'Double Slit Experiment: Wave-Particle Duality',
+                    channel: 'Physics Explained',
+                    duration: '12:45',
+                    tags: ['Quantum', 'Experiment', 'Physics'],
+                    views: '890K views',
+                    time: '1 week ago',
+                    trailRelevance: 'Quantum Physics Explained',
+                },
+                {
+                    id: 'sci4',
+                    title: 'Quantum Computing: The Future of Technology',
+                    channel: 'Tech Vision',
+                    duration: '20:10',
+                    tags: ['Quantum', 'Computing', 'Tech'],
+                    views: '567K views',
+                    time: '4 days ago',
+                    trailRelevance: 'Quantum Physics Explained',
+                },
+                {
+                    id: 'sci5',
+                    title: 'Heisenberg Uncertainty Principle Made Easy',
+                    channel: 'Science Asylum',
+                    duration: '11:25',
+                    tags: ['Quantum', 'Physics', 'Theory'],
+                    views: '345K views',
+                    time: '2 days ago',
+                    trailRelevance: 'Quantum Physics Explained',
+                },
+            ],
+            'Mediterranean Cooking': [
+                {
+                    id: 'cook1',
+                    title: 'Greek Salad Recipe - Authentic Mediterranean',
+                    channel: 'Mediterranean Kitchen',
+                    duration: '8:30',
+                    tags: ['Greek', 'Salad', 'Healthy'],
+                    views: '89K views',
+                    time: '1 day ago',
+                    trailRelevance: 'Mediterranean Cooking',
+                },
+                {
+                    id: 'cook2',
+                    title: 'Perfect Italian Pasta Carbonara - Traditional Recipe',
+                    channel: 'Pasta Grannies',
+                    duration: '13:20',
+                    tags: ['Italian', 'Pasta', 'Traditional'],
+                    views: '456K views',
+                    time: '3 days ago',
+                    trailRelevance: 'Mediterranean Cooking',
+                },
+                {
+                    id: 'cook3',
+                    title: 'Spanish Paella - Authentic Valencian Recipe',
+                    channel: 'Spain on a Fork',
+                    duration: '16:45',
+                    tags: ['Spanish', 'Paella', 'Seafood'],
+                    views: '234K views',
+                    time: '5 days ago',
+                    trailRelevance: 'Mediterranean Cooking',
+                },
+                {
+                    id: 'cook4',
+                    title: 'Homemade Hummus - Lebanese Style',
+                    channel: 'Middle Eastern Kitchen',
+                    duration: '7:15',
+                    tags: ['Lebanese', 'Hummus', 'Vegan'],
+                    views: '178K views',
+                    time: '2 days ago',
+                    trailRelevance: 'Mediterranean Cooking',
+                },
+                {
+                    id: 'cook5',
+                    title: 'Turkish Baklava: Sweet Layered Pastry',
+                    channel: 'Turkish Delights',
+                    duration: '19:30',
+                    tags: ['Turkish', 'Dessert', 'Baklava'],
+                    views: '312K views',
+                    time: '1 week ago',
+                    trailRelevance: 'Mediterranean Cooking',
+                },
+            ],
+        };
+
+        // Regular feed - mixed content with soft pastel colors (color psychology)
+        const regularFeedVideos = [
+            {
+                id: 'reg1',
+                title: 'Morning Yoga Flow - 15 Minute Routine',
+                channel: 'Yoga With Adriene',
+                duration: '15:20',
+                tags: ['Yoga', 'Fitness', 'Wellness'],
+                views: '2.1M views',
+                time: '1 week ago',
+                color: '#B39DDB', // Soft Lavender - calming, spiritual, wellness
+            },
+            {
+                id: 'reg2',
+                title: 'iPhone 15 Pro Review - Worth the Upgrade?',
+                channel: 'Marques Brownlee',
+                duration: '14:32',
+                tags: ['Tech', 'iPhone', 'Review'],
+                views: '5.6M views',
+                time: '2 days ago',
+                color: '#FFAB91', // Soft Peach - innovative, warm, approachable tech
+            },
+            {
+                id: 'reg3',
+                title: 'How to Train Your Dog - Basic Commands',
+                channel: 'Zak George\'s Dog Training',
+                duration: '18:45',
+                tags: ['Dogs', 'Training', 'Pets'],
+                views: '892K views',
+                time: '4 days ago',
+                color: '#A1887F', // Soft Brown - earthy, trustworthy, natural (pets)
+            },
+            {
+                id: 'reg4',
+                title: '10 Minute Ab Workout - No Equipment Needed',
+                channel: 'FitnessBlender',
+                duration: '10:15',
+                tags: ['Fitness', 'Workout', 'Abs'],
+                views: '1.3M views',
+                time: '3 days ago',
+                color: '#F48FB1', // Soft Pink - energetic, active, motivating
+            },
+            {
+                id: 'reg5',
+                title: 'Learning Guitar - Beginner Chords',
+                channel: 'JustinGuitar',
+                duration: '12:20',
+                tags: ['Guitar', 'Music', 'Tutorial'],
+                views: '678K views',
+                time: '1 week ago',
+                color: '#FFD54F', // Soft Gold - creative, harmonious, cheerful (music)
+            },
+            {
+                id: 'reg6',
+                title: 'Traveling Japan on a Budget - Complete Guide',
+                channel: 'Lost LeBlanc',
+                duration: '22:10',
+                tags: ['Travel', 'Japan', 'Budget'],
+                views: '1.8M views',
+                time: '5 days ago',
+                color: '#80DEEA', // Soft Cyan - peaceful, exploratory, adventure
+            },
+            {
+                id: 'reg7',
+                title: 'Photography Tips for Beginners',
+                channel: 'Peter McKinnon',
+                duration: '16:35',
+                tags: ['Photography', 'Tutorial', 'Camera'],
+                views: '945K views',
+                time: '2 days ago',
+                color: '#90CAF9', // Soft Blue - artistic, calm, creative focus
+            },
+        ];
+
+        const mockParkedVideos = [
+            {
+                id: 'p1',
+                title: 'Advanced React Patterns You Should Know',
+                channel: 'CodeMaster',
+                duration: '24:35',
+                tags: ['React', 'JavaScript'],
+                watched: false,
+                notes: 'Learn about compound components and render props',
+                parkedDate: '2025-10-08',
+            },
+            {
+                id: 'p2',
+                title: 'Understanding Quantum Entanglement',
+                channel: 'Physics Explained',
+                duration: '18:42',
+                tags: ['Physics', 'Quantum'],
+                watched: false,
+                notes: 'EPR paradox and Bell\'s theorem',
+                parkedDate: '2025-10-07',
+            },
+            {
+                id: 'p3',
+                title: 'Perfect Homemade Pasta from Scratch',
+                channel: 'Italian Kitchen',
+                duration: '15:20',
+                tags: ['Cooking', 'Italian'],
+                watched: true,
+                notes: 'Great technique for fresh pasta',
+                parkedDate: '2025-10-05',
+            },
+        ];
+
+        // Topic map data - Main topics + Meta tags
+        const topicMaps = {
+            'Web Development Mastery': {
+                leftMain: 'React',
+                rightMain: 'Node.js',
+                left: {
+                    mainTopics: ['React', 'Vue', 'Angular', 'Svelte', 'HTML/CSS'],
+                    metaTags: ['TypeScript', 'JavaScript', 'UI/UX', 'Responsive', 'Animations', 'State Management', 'Hooks', 'Components']
+                },
+                right: {
+                    mainTopics: ['Node.js', 'Python', 'Django', 'FastAPI', 'PHP'],
+                    metaTags: ['REST API', 'GraphQL', 'Databases', 'MongoDB', 'PostgreSQL', 'Authentication', 'DevOps', 'Docker']
+                },
+                connections: ['Frontend ↔ Backend', 'UI ↔ API', 'Client ↔ Server']
+            },
+            'Quantum Physics Explained': {
+                leftMain: 'Classical Physics',
+                rightMain: 'Quantum Computing',
+                left: {
+                    mainTopics: ['Classical Physics', 'Thermodynamics', 'Mechanics', 'Wave Theory', 'Relativity'],
+                    metaTags: ['Mathematics', 'Equations', 'Laws', 'Principles', 'Concepts', 'History', 'Scientists', 'Papers']
+                },
+                right: {
+                    mainTopics: ['Quantum Computing', 'Experiments', 'Technology', 'Engineering', 'Lab Work'],
+                    metaTags: ['Superposition', 'Entanglement', 'Qubits', 'Algorithms', 'Particles', 'Measurements', 'Applications', 'Future']
+                },
+                connections: ['Classical ↔ Quantum', 'Wave ↔ Particle', 'Theory ↔ Application']
+            },
+            'Mediterranean Cooking': {
+                leftMain: 'Italian',
+                rightMain: 'Greek',
+                left: {
+                    mainTopics: ['Italian', 'Pasta', 'Pizza', 'Risotto', 'Sicilian'],
+                    metaTags: ['Tomato Sauce', 'Cheese', 'Herbs', 'Olive Oil', 'Wine Pairing', 'Baking', 'Desserts', 'Regional']
+                },
+                right: {
+                    mainTopics: ['Greek', 'Turkish', 'Spanish', 'Lebanese', 'Moroccan'],
+                    metaTags: ['Mezze', 'Seafood', 'Grilling', 'Spices', 'Vegetables', 'Yogurt', 'Healthy', 'Traditional']
+                },
+                connections: ['Italian ↔ Mediterranean', 'Traditional ↔ Modern', 'Savory ↔ Sweet']
+            },
+        };
+
+        // App State
+        let state = {
+            currentScreen: 'home',
+            selectedChip: 'all',
+            isTrailFeed: false,
+            activeTrail: 'Web Development Mastery', // Default trail
+            focusRatio: 70,
+            focusSliderExpanded: false,
+            showTopicMapLeft: false,
+            showTopicMapRight: false,
+            // Single main topic per side
+            selectedMainTopicLeft: 'React',
+            selectedMainTopicRight: 'Node.js',
+            // Multiple meta tags per side
+            selectedMetaTagsLeft: [],
+            selectedMetaTagsRight: [],
+            // Search
+            searchQueryLeft: '',
+            searchQueryRight: '',
+            showSuggestion: true,
+            currentBottomTab: 'home',
+            selectedTrail: null,
+            trailDetailTab: 'videos',
+            parkedTab: 'towatch',
+            myTrailsTab: 'following',
+            createTrailData: {
+                name: '',
+                description: '',
+                topic: '',
+                region: 'Global',
+                skillLevel: 'Beginner',
+                focusRatio: 70,
+            },
+            notifications: true,
+            focusDefault: 70,
+            // Onboarding
+            showOnboarding: true, // Show on first open
+            onboardingStep: 0,
+            // Feature Help
+            showFeatureHelp: null, // stores which feature help to show
+        };
+
+        console.log('YouTube Trails v3.1 - Documentation-Based Help!');
+
+        // Full Feature Documentation (Original 10 cards - for scrollable help screen)
+        const featureDocumentation = [
+            {
+                icon: '🎬',
+                title: 'Welcome to YouTube Trails!',
+                subtitle: 'Organize your viewing into focused learning journeys',
+                content: `
+                    <div class="feature-text" style="text-align: center; margin-bottom: 16px;">
+                        YouTube Trails helps you transform passive watching into structured learning experiences.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">🎯 FOCUSED LEARNING</div>
+                        <div class="feature-text">Create topic-specific content streams</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">🧭 ORGANIZED DISCOVERY</div>
+                        <div class="feature-text">Track your progress through topics</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">👥 COMMUNITY CURATION</div>
+                        <div class="feature-text">Follow trails created by others</div>
+                    </div>
+                `
+            },
+            {
+                icon: '🌐',
+                title: 'Feed Toggle',
+                subtitle: 'Switch between Regular & Trail Feed',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        Control your viewing focus with a simple toggle.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">REGULAR FEED</div>
+                        <div class="feature-text">Your familiar YouTube feed with mixed topics based on your overall behavior.</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">TRAIL FEED</div>
+                        <div class="feature-text">Focused, topic-specific content that helps you stay on track with structured learning.</div>
+                    </div>
+                    <div style="padding: 12px; background: #E8F0FE; border-radius: 8px; margin-top: 12px; font-size: 12px; line-height: 18px;">
+                        💡 <strong>Tip:</strong> Use Regular Feed for casual browsing, Trail Feed for intentional learning sessions.
+                    </div>
+                `
+            },
+            {
+                icon: '🎚️',
+                title: 'Content Focus Slider',
+                subtitle: 'Fine-tune your content mix',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        Adjust how narrow or broad your Trail recommendations are.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">EXAMPLE: React 70% ↔ 30% Node.js</div>
+                        <div class="feature-text">See mostly React content with some Node.js mixed in for full-stack perspective.</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">WHY IT'S POWERFUL</div>
+                        <div class="feature-text">• Prevents fatigue from too much of one thing<br>• Balances depth with discovery<br>• You control the algorithm blend</div>
+                    </div>
+                    <div style="padding: 12px; background: #FFF9E6; border-radius: 8px; margin-top: 12px; font-size: 12px;">
+                        ⚡ Tap the slider anytime to adjust your content balance
+                    </div>
+                `
+            },
+            {
+                icon: '🗺️',
+                title: 'Trail Details',
+                subtitle: 'Your topic-based learning hub',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        Each Trail is a dynamic, social learning space.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">NOT JUST A PLAYLIST</div>
+                        <div class="feature-text">Trails update automatically with new content and are shared across the community.</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">INCLUDES</div>
+                        <div class="feature-text">• Curated videos<br>• Related tags<br>• Learning notes<br>• Progress tracking<br>• Follower community</div>
+                    </div>
+                `
+            },
+            {
+                icon: '💡',
+                title: 'Smart Trail Suggestions',
+                subtitle: 'Turn patterns into trails',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        We notice when you're interested in a topic and suggest organizing it.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">CONTEXTUAL PROMPTS</div>
+                        <div class="feature-text">"You've watched 7+ videos on Yoga — want to create a Trail?"</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">WHY IT HELPS</div>
+                        <div class="feature-text">• Converts passive consumption into active organization<br>• Light-touch, non-intrusive<br>• Makes you feel guided, not overwhelmed</div>
+                    </div>
+                `
+            },
+            {
+                icon: '📑',
+                title: 'Parked Videos',
+                subtitle: 'Intentional "Watch Later"',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        A smarter, context-aware version of Watch Later.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">THE PROBLEM WITH WATCH LATER</div>
+                        <div class="feature-text">It becomes a cluttered, undifferentiated list that you never actually watch.</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">PARKED VIDEOS SOLUTION</div>
+                        <div class="feature-text">• Assign videos to specific Trails<br>• Add notes and keywords<br>• Separate "To Watch" vs "Watched"<br>• Track total time pending</div>
+                    </div>
+                `
+            },
+            {
+                icon: '🧭',
+                title: 'Trail Path',
+                subtitle: 'Your learning journey visualized',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        See your progress through a topic as a navigable timeline.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">BETTER THAN HISTORY</div>
+                        <div class="feature-text">YouTube history is a flat list. Trail Path is organized by topic with keywords and tags.</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">SUPPORTS LEARNING</div>
+                        <div class="feature-text">• See what you've completed<br>• Track progress visually<br>• Revisit key concepts<br>• Feel accomplishment</div>
+                    </div>
+                `
+            },
+            {
+                icon: '👥',
+                title: 'Follow Trails & Community',
+                subtitle: 'Topic-centric, not just creator-centric',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        Connect over shared interests, not just personalities.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">NEW DISCOVERY LAYER</div>
+                        <div class="feature-text">Follow Trails curated by experts, educators, or fellow learners in your field.</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">EXPANDS YOUTUBE</div>
+                        <div class="feature-text">• Creates curator role<br>• Builds topic communities<br>• Enables collaborative learning<br>• Shares knowledge paths</div>
+                    </div>
+                `
+            },
+            {
+                icon: '📝',
+                title: 'Notes & Summaries',
+                subtitle: 'Make YouTube interactive',
+                content: `
+                    <div class="feature-text" style="margin-bottom: 16px;">
+                        Add your own annotations and insights to trails and videos.
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">PERSONAL LEARNING TOOL</div>
+                        <div class="feature-text">Jot down key takeaways, reminders, or questions as you learn.</div>
+                    </div>
+                    <div class="onboarding-feature">
+                        <div class="feature-label">PERFECT FOR</div>
+                        <div class="feature-text">• Students taking courses<br>• Professionals upskilling<br>• Educators organizing content<br>• Anyone learning systematically</div>
+                    </div>
+                    <div style="padding: 12px; background: #E8F0FE; border-radius: 8px; margin-top: 12px; font-size: 12px;">
+                        🚀 Potential integrations: Google Keep, Notion, Evernote
+                    </div>
+                `
+            },
+            {
+                icon: '🎉',
+                title: 'You\'re All Set!',
+                subtitle: 'Start exploring',
+                content: `
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 16px; font-weight: 500; margin-bottom: 12px; line-height: 24px;">
+                            Transform how you use YouTube:<br>from endless scrolling to purposeful learning.
+                        </div>
+                    </div>
+                    <div class="onboarding-feature" style="background: #E8F0FE; border: 2px solid var(--yt-blue);">
+                        <div class="feature-label">QUICK START GUIDE</div>
+                        <div class="feature-text">
+                            1. Toggle to <strong>Trail Feed</strong><br>
+                            2. Select a trail (Web Dev, Science, or Cooking)<br>
+                            3. Adjust the <strong>content slider</strong><br>
+                            4. Park videos you want to watch later<br>
+                            5. Track your progress in <strong>Trail Path</strong>
+                        </div>
+                    </div>
+                    <div class="onboarding-feature" style="background: #FFF9E6; border-left: 4px solid #FFD54F; margin-top: 12px;">
+                        <div class="feature-label">📖 NEED A REFRESHER?</div>
+                        <div class="feature-text">Access all 10 features as a <strong>scrollable guide</strong> anytime:<br><strong>Profile → Complete Guide</strong></div>
+                    </div>
+                    <div style="padding: 10px; background: #F9F9F9; border-radius: 8px; margin-top: 12px; font-size: 11px; text-align: center; color: var(--yt-text-secondary);">
+                        💡 Prefer to read everything at once?<br>
+                        <span style="color: var(--yt-blue); cursor: pointer; font-weight: 500;" onclick="skipOnboarding(); changeScreen('featureguide'); render();">
+                            Skip to Scrollable Guide
+                        </span>
+                    </div>
+                `
+            },
+        ];
+
+        // Feature Help Content (contextual tooltips)
+        const featureHelp = {
+            'feed-toggle': {
+                title: '🌐 Feed Toggle',
+                text: 'Switch between <strong>Regular Feed</strong> (mixed topics) and <strong>Trail Feed</strong> (focused topics). Use Regular for casual browsing, Trail for intentional learning.'
+            },
+            'content-slider': {
+                title: '🎚️ Content Slider',
+                text: 'Adjust your topic balance (e.g., 70% React ↔ 30% Node.js). Slide left for more focus, right for more variety. Prevents content fatigue!'
+            },
+            'park-video': {
+                title: '📑 Park Videos',
+                text: 'Save videos with context! Unlike Watch Later, you can assign them to specific Trails and add notes. Find them in the Parked tab.'
+            },
+            'trail-path': {
+                title: '🧭 Trail Path',
+                text: 'See your learning journey as a visual timeline. Track completed videos, progress percentage, and revisit key concepts anytime.'
+            },
+            'trail-details': {
+                title: '🗺️ Trail Details',
+                text: 'Each Trail has Videos, Tags, Notes, and Path tabs. Follow trails made by others or create your own. It\'s like a playlist, but smarter!'
+            },
+        };
+
+        // Render Main App
+        function renderApp() {
+            const screens = {
+                'home': renderHomeScreen,
+                'mytrails': renderMyTrailsScreen,
+                'traildetail': renderTrailDetailScreen,
+                'parked': renderParkedScreen,
+                'createtrail': renderCreateTrailScreen,
+                'profile': renderProfileScreen,
+                'featureguide': renderFeatureGuideScreen,
+            };
+
+            return screens[state.currentScreen]();
+        }
+
+        // Home Screen
+        function renderHomeScreen() {
+            return `
+                ${renderHeader()}
+                ${renderTrailToggleBar()}
+                ${renderChipsBar()}
+                ${renderContent()}
+                ${renderBottomNav()}
+                ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
+                ${state.showOnboarding ? renderOnboarding() : ''}
+            `;
+        }
+
+        function renderHeader() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-logo">
+                        <div class="yt-logo-icon ${state.isTrailFeed ? 'trail-mode' : ''}">
+                            ${state.isTrailFeed 
+                                ? '<span class="material-icons" style="font-size: 20px; color: white;">route</span>' 
+                                : '▶'}
+                        </div>
+                        <span class="yt-logo-text">YouTube</span>
+                        <span class="yt-logo-trails">Trails</span>
+                    </div>
+                    <div class="yt-header-actions">
+                        <button class="yt-icon-btn">
+                            <span class="material-icons">cast</span>
+                        </button>
+                        <button class="yt-icon-btn" onclick="changeScreen('notifications')">
+                            <span class="material-icons">notifications_none</span>
+                        </button>
+                        <button class="yt-icon-btn">
+                            <span class="material-icons">search</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTrailToggleBar() {
+            return `
+                <div class="trail-toggle-bar">
+                    <div class="toggle-group has-tooltip-small">
+                        <span class="toggle-label ${!state.isTrailFeed ? 'active' : ''}">Regular</span>
+                        <div class="yt-toggle ${state.isTrailFeed ? 'active' : ''}" onclick="toggleFeed()">
+                            <div class="yt-toggle-thumb"></div>
+                        </div>
+                        <span class="toggle-label ${state.isTrailFeed ? 'active' : ''}">Trail Feed</span>
+                        <div class="tooltip-small">🌐 Switch feed mode</div>
+                    </div>
+                    ${state.isTrailFeed ? renderInlineSlider() : ''}
+                </div>
+            `;
+        }
+
+        function renderInlineSlider() {
+            const trail = mockTrails.find(t => t.name === state.activeTrail);
+            const trailColor = trail ? trail.color : '#667eea';
+            
+            const leftPercent = state.focusRatio;
+            const rightPercent = 100 - state.focusRatio;
+            
+            // Use selected main topics or defaults
+            const leftTopic = state.selectedMainTopicLeft;
+            const rightTopic = state.selectedMainTopicRight;
+            
+            if (!state.focusSliderExpanded) {
+                // Collapsed state - show selected topics with percentages
+                return `
+                    <div class="focus-slider-section inline-mode has-tooltip-small" onclick="toggleSlider()">
+                        <div class="focus-slider-collapsed">
+                            <span class="collapsed-label" style="font-size: 11px;">${leftTopic} ${leftPercent}%</span>
+                            <span class="collapsed-value" style="font-size: 11px; color: var(--yt-text-secondary);">↔</span>
+                            <span class="collapsed-label" style="font-size: 11px;">${rightPercent}% ${rightTopic}</span>
+                        </div>
+                        <div class="tooltip-small">🎚️ Tap to adjust mix</div>
+                    </div>
+                `;
+            }
+
+            // Expanded state - drops down below toggle bar
+            const leftMetaCount = state.selectedMetaTagsLeft.length;
+            const rightMetaCount = state.selectedMetaTagsRight.length;
+            
+            return `
+                <div class="focus-slider-section expanded-mode">
+                    <div class="focus-slider-expanded">
+                        <div class="focus-slider-header">
+                            <span class="focus-slider-label">Content Balance</span>
+                            <button class="yt-icon-btn" style="width: 28px; height: 28px;" onclick="event.stopPropagation(); toggleSlider()">
+                                <span class="material-icons" style="font-size: 20px;">expand_less</span>
+                            </button>
+                        </div>
+                        
+                        <div class="topic-bubbles">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                <div class="topic-bubble ${state.showTopicMapLeft ? 'active' : ''}" 
+                                     style="background: ${trailColor};"
+                                     onclick="event.stopPropagation(); showTopicMap('left')">
+                                    ${leftMetaCount > 0 ? leftMetaCount : '◐'}
+                                </div>
+                                <span style="font-size: 9px; color: var(--yt-text-secondary); text-align: center;">Tap to select</span>
+                            </div>
+                            <div style="flex: 1; text-align: center; font-size: 11px; color: var(--yt-text-secondary); line-height: 14px;">
+                                ${leftPercent}% ↔ ${rightPercent}%
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                <div class="topic-bubble ${state.showTopicMapRight ? 'active' : ''}" 
+                                     style="background: ${trailColor}dd;"
+                                     onclick="event.stopPropagation(); showTopicMap('right')">
+                                    ${rightMetaCount > 0 ? rightMetaCount : '◑'}
+                                </div>
+                                <span style="font-size: 9px; color: var(--yt-text-secondary); text-align: center;">Tap to select</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <input type="range" class="yt-slider" min="0" max="100" value="${state.focusRatio}" 
+                                   oninput="updateFocus(this.value)" 
+                                   style="background: linear-gradient(to right, ${trailColor} 0%, ${trailColor} ${state.focusRatio}%, ${trailColor}66 ${state.focusRatio}%, ${trailColor}66 100%);">
+                        </div>
+                        
+                        <div class="slider-labels">
+                            <span class="slider-label-text">${leftTopic} (${leftPercent}%)</span>
+                            <span class="slider-label-text">${rightTopic} (${rightPercent}%)</span>
+                        </div>
+                        
+                        <p class="slider-description">
+                            ${leftPercent > 70 ? `More ${leftTopic}-focused content` : 
+                              rightPercent > 70 ? `More ${rightTopic}-focused content` : 
+                              `Balanced mix of ${leftTopic} and ${rightTopic}`}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderChipsBar() {
+            // Show trail selection chips only when Trail Feed is active
+            if (state.isTrailFeed) {
+                const trailChips = [
+                    { id: 'Web Development Mastery', label: 'Web Dev' },
+                    { id: 'Quantum Physics Explained', label: 'Science' },
+                    { id: 'Mediterranean Cooking', label: 'Cooking' },
+                ];
+
+                return `
+                    <div class="yt-chips-bar">
+                        ${trailChips.map(chip => `
+                            <button class="yt-chip ${state.activeTrail === chip.id ? 'active' : ''}" 
+                                    onclick="selectTrail('${chip.id}')">
+                                ${chip.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                // Regular feed chips
+                const chips = [
+                    { id: 'all', label: 'All' },
+                    { id: 'following', label: 'Following' },
+                    { id: 'trending', label: 'Trending' },
+                ];
+
+                return `
+                    <div class="yt-chips-bar">
+                        ${chips.map(chip => `
+                            <button class="yt-chip ${state.selectedChip === chip.id ? 'active' : ''}" 
+                                    onclick="selectChip('${chip.id}')">
+                                ${chip.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        function renderContent() {
+            return `
+                <div class="yt-content">
+                    ${!state.isTrailFeed && state.showSuggestion && state.selectedChip === 'all' ? renderBanner() : ''}
+                    ${state.isTrailFeed ? renderTopicHeader() : ''}
+                    ${renderVideos()}
+                    ${state.showTopicMapLeft || state.showTopicMapRight ? renderTopicMap() : ''}
+                </div>
+            `;
+        }
+
+        function renderOnboarding() {
+            const currentStep = featureDocumentation[state.onboardingStep];
+            const totalSteps = featureDocumentation.length;
+            const isFirstStep = state.onboardingStep === 0;
+            const isLastStep = state.onboardingStep === totalSteps - 1;
+
+            return `
+                <div class="onboarding-overlay">
+                    <div class="onboarding-card">
+                        <!-- Progress Dots -->
+                        <div class="onboarding-progress">
+                            ${featureDocumentation.map((_, index) => `
+                                <div class="progress-dot ${index === state.onboardingStep ? 'active' : ''}"></div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Header -->
+                        <div class="onboarding-header">
+                            <span class="onboarding-icon">${currentStep.icon}</span>
+                            <h2 class="onboarding-title">${currentStep.title}</h2>
+                            <p class="onboarding-subtitle">${currentStep.subtitle}</p>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="onboarding-content">
+                            ${currentStep.content}
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="onboarding-actions">
+                            ${!isFirstStep ? `
+                                <button class="onboarding-btn onboarding-btn-secondary" onclick="onboardingBack()">
+                                    Back
+                                </button>
+                            ` : `
+                                <button class="onboarding-btn onboarding-btn-secondary" onclick="skipOnboarding()">
+                                    Skip
+                                </button>
+                            `}
+                            <button class="onboarding-btn onboarding-btn-primary" onclick="${isLastStep ? 'finishOnboarding()' : 'onboardingNext()'}">
+                                ${isLastStep ? 'Get Started' : 'Next'}
+                            </button>
+                        </div>
+
+                        <!-- Step Counter -->
+                        <div style="text-align: center; margin-top: 16px; font-size: 12px; color: var(--yt-text-secondary);">
+                            Step ${state.onboardingStep + 1} of ${totalSteps} • 
+                            <span style="color: var(--yt-blue); cursor: pointer;" onclick="skipOnboarding(); changeScreen('featureguide'); render();">
+                                View as Scrollable Guide
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderBanner() {
+            return `
+                <div class="yt-banner">
+                    <div class="yt-banner-header">
+                        <span class="yt-banner-icon">🧘</span>
+                        <div class="yt-banner-text">
+                            <h3>Organize into a Trail?</h3>
+                            <p>You've watched more than 7 videos on Yoga. Want to organize these into a Trail?</p>
+                        </div>
+                    </div>
+                    <div class="yt-banner-actions">
+                        <button class="yt-banner-btn yt-banner-btn-secondary" onclick="dismissBanner()">
+                            Dismiss
+                        </button>
+                        <button class="yt-banner-btn yt-banner-btn-primary" onclick="changeScreen('createtrail')">
+                            Create Trail
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTopicHeader() {
+            const trailNames = {
+                'Web Development Mastery': 'Web Development',
+                'Quantum Physics Explained': 'Quantum Physics',
+                'Mediterranean Cooking': 'Mediterranean Cooking'
+            };
+            const leftPercent = state.focusRatio;
+            const rightPercent = 100 - state.focusRatio;
+            const leftTopic = state.selectedMainTopicLeft;
+            const rightTopic = state.selectedMainTopicRight;
+            
+            return `
+                <div id="topicHeader" style="padding: 12px 16px 8px 16px; transition: opacity 0.3s ease, max-height 0.3s ease, padding 0.3s ease; overflow: hidden;">
+                    <h2 style="font-size: 18px; font-weight: 500; margin-bottom: 2px;">${trailNames[state.activeTrail]}</h2>
+                    <p style="font-size: 11px; color: var(--yt-text-secondary);">
+                        ${leftTopic} ${leftPercent}% ↔ ${rightPercent}% ${rightTopic} • Tap slider to adjust
+                    </p>
+                </div>
+            `;
+        }
+
+        function renderTopicMap() {
+            const side = state.showTopicMapLeft ? 'left' : 'right';
+            const topicMap = topicMaps[state.activeTrail];
+            const topicData = topicMap[side];
+            const sideLabel = side === 'left' ? 'Left Side' : 'Right Side';
+            
+            const selectedMainTopic = side === 'left' ? state.selectedMainTopicLeft : state.selectedMainTopicRight;
+            const selectedMetaTags = side === 'left' ? state.selectedMetaTagsLeft : state.selectedMetaTagsRight;
+            const searchQuery = side === 'left' ? state.searchQueryLeft : state.searchQueryRight;
+            
+            // Filter topics based on search
+            const filteredMainTopics = topicData.mainTopics.filter(t => 
+                t.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            const filteredMetaTags = topicData.metaTags.filter(t => 
+                t.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            
+            return `
+                <div class="topic-map-overlay" onclick="closeTopicMap()"></div>
+                <div class="topic-map">
+                    <div class="topic-map-header">
+                        <span class="topic-map-title">${sideLabel} - Select Topic & Tags</span>
+                        <button class="topic-map-close" onclick="closeTopicMap()">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Search Bar -->
+                    <input type="text" 
+                           class="topic-search" 
+                           placeholder="Search topics and tags..."
+                           value="${searchQuery}"
+                           oninput="updateSearch('${side}', this.value)"
+                           onclick="event.stopPropagation()">
+                    
+                    <!-- Main Topics Section -->
+                    <div class="topic-section-header">Main Topic (Choose One)</div>
+                    <div style="margin-bottom: 16px;">
+                        ${filteredMainTopics.map(topic => `
+                            <div class="main-topic-item ${selectedMainTopic === topic ? 'selected' : ''}" 
+                                 onclick="event.stopPropagation(); selectMainTopic('${side}', '${topic}')">
+                                <div class="radio-indicator"></div>
+                                <span>${topic}</span>
+                            </div>
+                        `).join('')}
+                        ${filteredMainTopics.length === 0 ? '<p style="font-size: 12px; color: var(--yt-text-secondary); text-align: center; padding: 20px;">No topics found</p>' : ''}
+                    </div>
+                    
+                    <!-- Meta Tags Section -->
+                    <div class="topic-section-header">Refine with Tags (Multiple)</div>
+                    <div class="meta-tags-grid">
+                        ${filteredMetaTags.map(tag => `
+                            <div class="meta-tag-item ${selectedMetaTags.includes(tag) ? 'selected' : ''}" 
+                                 onclick="event.stopPropagation(); toggleMetaTag('${side}', '${tag}')">
+                                <div class="checkbox-indicator"></div>
+                                <span>${tag}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${filteredMetaTags.length === 0 && searchQuery ? '<p style="font-size: 12px; color: var(--yt-text-secondary); text-align: center; padding: 20px;">No tags found</p>' : ''}
+                    
+                    <!-- Topic Connections -->
+                    <div class="topic-connections">
+                        <div class="topic-connections-title">📊 Topic Connections</div>
+                        ${topicMap.connections.map(conn => `
+                            <div class="connection-item">${conn}</div>
+                        `).join('')}
+                    </div>
+                    
+                    <!-- Info Box -->
+                    <div style="margin-top: 12px; padding: 10px; background: #E8F0FE; border-radius: 8px; font-size: 11px; color: var(--yt-text-secondary); line-height: 16px;">
+                        💡 <strong>Main Topic:</strong> Primary focus (one only) • <strong>Meta Tags:</strong> Refine content (multiple allowed)
+                    </div>
+                    
+                    <!-- Summary -->
+                    ${selectedMainTopic || selectedMetaTags.length > 0 ? `
+                        <div style="margin-top: 12px; padding: 10px; background: #F9F9F9; border-radius: 8px;">
+                            <div style="font-size: 11px; font-weight: 500; margin-bottom: 6px;">Current Selection:</div>
+                            <div style="font-size: 12px; color: var(--yt-blue); margin-bottom: 4px;">
+                                🎯 ${selectedMainTopic}
+                            </div>
+                            ${selectedMetaTags.length > 0 ? `
+                                <div style="font-size: 11px; color: var(--yt-text-secondary);">
+                                    + ${selectedMetaTags.length} meta tags: ${selectedMetaTags.slice(0, 2).join(', ')}${selectedMetaTags.length > 2 ? '...' : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderVideos() {
+            // Get videos based on feed type
+            const videos = state.isTrailFeed 
+                ? trailVideos[state.activeTrail] 
+                : regularFeedVideos;
+            
+            return videos.map(video => {
+                // Get video color
+                let videoColor = '#667eea';
+                
+                if (state.isTrailFeed) {
+                    // Trail feed: use trail color
+                    const trail = mockTrails.find(t => t.name === video.trailRelevance || t.name === state.activeTrail);
+                    videoColor = trail ? trail.color : '#667eea';
+                } else {
+                    // Regular feed: use video's unique soft pastel color
+                    videoColor = video.color || '#667eea';
+                }
+                
+                const thumbnailGradient = `linear-gradient(135deg, ${videoColor} 0%, ${videoColor}dd 100%)`;
+                const avatarGradient = `linear-gradient(135deg, ${videoColor} 0%, ${videoColor}cc 100%)`;
+                
+                return `
+                <div class="yt-video-card">
+                    <div class="yt-thumbnail-container">
+                        <div class="yt-thumbnail" style="background: ${thumbnailGradient};">${video.title}</div>
+                        ${video.trailRelevance && state.isTrailFeed ? `
+                            <div class="yt-trail-badge" style="background: ${videoColor};">
+                                <span class="material-icons" style="font-size: 12px;">route</span>
+                                Trail
+                            </div>
+                        ` : ''}
+                        <div class="yt-duration">${video.duration}</div>
+                    </div>
+                    <div class="yt-video-info">
+                        <div class="yt-video-tags">
+                            ${video.tags.map(tag => `<span class="yt-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="yt-video-header">
+                            <div class="yt-avatar" style="background: ${avatarGradient};"></div>
+                            <div class="yt-video-details">
+                                <div class="yt-video-title">${video.title}</div>
+                                <div class="yt-video-meta">
+                                    ${video.channel} • ${video.views} • ${video.time}
+                                </div>
+                            </div>
+                            <button class="yt-icon-btn" style="width: 32px; height: 32px;">
+                                <span class="material-icons" style="font-size: 20px;">more_vert</span>
+                            </button>
+                        </div>
+                        <div class="yt-video-actions">
+                            <button class="yt-action-btn has-tooltip-small" onclick="parkVideo('${video.id}')">
+                                <span class="material-icons">bookmark_border</span>
+                                Park
+                                <div class="tooltip-small">Park for later</div>
+                            </button>
+                            <button class="yt-action-btn has-tooltip-small" onclick="showAddToTrailModal('${video.id}')">
+                                <span class="material-icons">add_circle_outline</span>
+                                Trail
+                                <div class="tooltip-small">➕ Add to Trail</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // My Trails Screen
+        function renderMyTrailsScreen() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-logo">
+                        <div class="yt-logo-icon">▶</div>
+                        <span class="yt-logo-text">My Trails</span>
+                    </div>
+                </div>
+                
+                <div class="yt-chips-bar">
+                    <button class="yt-chip has-tooltip-small ${state.myTrailsTab === 'following' ? 'active' : ''}" 
+                            onclick="changeMyTrailsTab('following')">
+                        Following
+                        <div class="tooltip-small">👥 Trails from community</div>
+                    </button>
+                    <button class="yt-chip has-tooltip-small ${state.myTrailsTab === 'created' ? 'active' : ''}" 
+                            onclick="changeMyTrailsTab('created')">
+                        Created
+                        <div class="tooltip-small">✨ Your own Trails</div>
+                    </button>
+                </div>
+                
+                <div class="yt-content">
+                    ${renderTrailsList()}
+                </div>
+                
+                ${renderBottomNav()}
+                ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
+                ${state.showOnboarding ? renderOnboarding() : ''}
+            `;
+        }
+
+        function renderTrailsList() {
+            const trails = state.myTrailsTab === 'following' 
+                ? mockTrails.filter(t => t.following)
+                : mockTrails;
+
+            if (trails.length === 0) {
+                return `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📚</div>
+                        <div class="empty-state-title">No trails yet</div>
+                        <div class="empty-state-text">
+                            ${state.myTrailsTab === 'following' 
+                                ? 'Start following trails to see them here' 
+                                : 'Create your first trail to get started'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return trails.map(trail => {
+                const gradient = `linear-gradient(135deg, ${trail.color} 0%, ${trail.color}dd 100%)`;
+                const topicMap = topicMaps[trail.name];
+                const leftPercent = trail.focusRatio || 70;
+                const rightPercent = 100 - leftPercent;
+                const leftTopic = topicMap ? topicMap.leftMain : 'Left';
+                const rightTopic = topicMap ? topicMap.rightMain : 'Right';
+                
+                return `
+                <div class="yt-trail-card" onclick="viewTrail('${trail.id}')">
+                    <div class="yt-trail-thumbnail" style="background: ${gradient};">${trail.name}</div>
+                    <div class="yt-trail-info">
+                        <h3 class="yt-trail-title">${trail.name}</h3>
+                        <p class="yt-trail-creator">by ${trail.creator}</p>
+                        <div class="yt-trail-stats">
+                            <span>${trail.videoCount} videos</span>
+                            <div class="yt-trail-dot"></div>
+                            <span>${trail.followerCount.toLocaleString()} followers</span>
+                        </div>
+                        <div class="yt-trail-tags">
+                            ${trail.tags.map(tag => `<span class="yt-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="yt-trail-footer">
+                            <span class="yt-focus-badge" style="background: ${trail.color}; font-size: 10px; padding: 4px 6px;">
+                                ${leftTopic} ${leftPercent}% ↔ ${rightPercent}% ${rightTopic}
+                            </span>
+                            <span class="yt-skill-badge">${trail.skillLevel}</span>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Trail Detail Screen
+        function renderTrailDetailScreen() {
+            const trail = mockTrails.find(t => t.id === state.selectedTrail);
+            if (!trail) return renderHomeScreen();
+
+            return `
+                <div class="yt-header">
+                    <div class="yt-header-back">
+                        <button class="yt-icon-btn" onclick="goBack()">
+                            <span class="material-icons">arrow_back</span>
+                        </button>
+                        <span class="yt-header-title">Trail Details</span>
+                    </div>
+                    <button class="yt-icon-btn">
+                        <span class="material-icons">more_vert</span>
+                    </button>
+                </div>
+
+                <div class="yt-content">
+                    <div class="trail-detail-header">
+                        <h1 class="trail-detail-title">${trail.name}</h1>
+                        <p style="font-size: 13px; color: var(--yt-text-secondary); margin-bottom: 8px;">by ${trail.creator}</p>
+                        <p style="font-size: 14px; line-height: 20px; margin-bottom: 12px;">${trail.description}</p>
+                        
+                        <div class="trail-detail-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">${trail.followerCount.toLocaleString()}</span>
+                                <span class="stat-label">Followers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">${trail.videoCount}</span>
+                                <span class="stat-label">Videos</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">${trail.focusRatio}%</span>
+                                <span class="stat-label">Focus</span>
+                            </div>
+                        </div>
+
+                        <div class="trail-detail-actions">
+                            <button class="btn-follow ${trail.following ? 'following' : ''}" 
+                                    onclick="toggleFollow('${trail.id}')">
+                                ${trail.following ? 'Following' : 'Follow'}
+                            </button>
+                            <button class="yt-icon-btn">
+                                <span class="material-icons">${state.notifications ? 'notifications' : 'notifications_none'}</span>
+                            </button>
+                            <button class="yt-icon-btn">
+                                <span class="material-icons">share</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="detail-tabs">
+                        <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'videos' ? 'active' : ''}" 
+                                onclick="changeTrailDetailTab('videos')">
+                            Videos
+                            <div class="tooltip-small">🎥 All videos</div>
+                        </button>
+                        <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'tags' ? 'active' : ''}" 
+                                onclick="changeTrailDetailTab('tags')">
+                            Tags
+                            <div class="tooltip-small">🏷️ Keywords</div>
+                        </button>
+                        <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'notes' ? 'active' : ''}" 
+                                onclick="changeTrailDetailTab('notes')">
+                            Notes
+                            <div class="tooltip-small">📝 Annotations</div>
+                        </button>
+                        <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'path' ? 'active' : ''}" 
+                                onclick="changeTrailDetailTab('path')">
+                            Path
+                            <div class="tooltip-small">🧭 Journey</div>
+                        </button>
+                    </div>
+
+                    ${renderTrailDetailContent(trail)}
+                </div>
+
+                ${renderBottomNav()}
+                ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
+                ${state.showOnboarding ? renderOnboarding() : ''}
+            `;
+        }
+
+        function renderTrailDetailContent(trail) {
+            if (state.trailDetailTab === 'videos') {
+                const gradient = `linear-gradient(135deg, ${trail.color} 0%, ${trail.color}dd 100%)`;
+                const avatarGradient = `linear-gradient(135deg, ${trail.color} 0%, ${trail.color}cc 100%)`;
+                const videos = trailVideos[trail.name] || [];
+                
+                return `
+                    <div style="padding: 12px 0;">
+                        <div style="padding: 12px 16px; font-size: 14px; font-weight: 500;">
+                            ${trail.videoCount} videos in this trail
+                        </div>
+                        ${videos.map(v => `
+                            <div class="yt-video-card">
+                                <div class="yt-thumbnail-container">
+                                    <div class="yt-thumbnail" style="background: ${gradient};">${v.title}</div>
+                                    <div class="yt-duration">${v.duration}</div>
+                                </div>
+                                <div class="yt-video-info">
+                                    <div class="yt-video-tags">
+                                        ${v.tags.map(tag => `<span class="yt-tag">${tag}</span>`).join('')}
+                                    </div>
+                                    <div class="yt-video-header">
+                                        <div class="yt-avatar" style="background: ${avatarGradient};"></div>
+                                        <div class="yt-video-details">
+                                            <div class="yt-video-title">${v.title}</div>
+                                            <div class="yt-video-meta">${v.channel} • ${v.views}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (state.trailDetailTab === 'tags') {
+                return `
+                    <div style="padding: 20px 16px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            ${trail.tags.map(tag => `
+                                <span style="padding: 10px 16px; background: ${trail.color}; color: white; 
+                                      border-radius: 20px; font-size: 14px;">${tag}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (state.trailDetailTab === 'notes') {
+                return `
+                    <div style="padding: 16px;">
+                        <div style="padding: 16px; background: #F9F9F9; border-radius: 12px; line-height: 20px; white-space: pre-line; font-size: 13px;">
+                            ${trail.notes}
+                        </div>
+                        
+                        <div style="margin-top: 16px; padding: 12px; background: #E8F0FE; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span class="material-icons" style="font-size: 20px; color: var(--yt-blue);">edit_note</span>
+                                <span style="font-size: 13px; font-weight: 500;">Add Your Notes</span>
+                            </div>
+                            <textarea placeholder="Add personal notes about this trail..." 
+                                      style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--yt-divider); 
+                                             border-radius: 8px; font-size: 13px; font-family: 'Roboto', sans-serif;"></textarea>
+                        </div>
+                    </div>
+                `;
+            } else if (state.trailDetailTab === 'path') {
+                if (!trail.pathData || trail.pathData.length === 0) {
+                    return `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🗺️</div>
+                            <div class="empty-state-title">No path data yet</div>
+                            <div class="empty-state-text">Trail path will show your learning progression</div>
+                        </div>
+                    `;
+                }
+                
+                const completedCount = trail.pathData.filter(v => v.completed).length;
+                const totalCount = trail.pathData.length;
+                const progressPercent = Math.round((completedCount / totalCount) * 100);
+                
+                return `
+                    <div style="padding: 16px;">
+                        <!-- Progress Bar -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-size: 13px; font-weight: 500;">Trail Progress</span>
+                                <span style="font-size: 13px; color: var(--yt-blue); font-weight: 500;">
+                                    ${completedCount}/${totalCount} completed (${progressPercent}%)
+                                </span>
+                            </div>
+                            <div style="height: 8px; background: #E0E0E0; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: ${progressPercent}%; background: ${trail.color}; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Path Items -->
+                        <div style="position: relative; padding-left: 24px;">
+                            ${trail.pathData.map((item, index) => `
+                                <div style="position: relative; margin-bottom: 20px;">
+                                    <!-- Timeline dot -->
+                                    <div style="position: absolute; left: -24px; top: 4px; width: 16px; height: 16px; 
+                                                background: ${item.completed ? trail.color : '#E0E0E0'}; 
+                                                border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 2px ${item.completed ? trail.color : '#E0E0E0'};"></div>
+                                    
+                                    <!-- Timeline line -->
+                                    ${index < trail.pathData.length - 1 ? `
+                                        <div style="position: absolute; left: -16px; top: 20px; width: 2px; height: calc(100% + 10px); 
+                                                    background: ${item.completed && trail.pathData[index + 1].completed ? trail.color : '#E0E0E0'};"></div>
+                                    ` : ''}
+                                    
+                                    <!-- Video Info -->
+                                    <div style="padding: 12px; background: ${item.completed ? '#F9F9F9' : 'white'}; 
+                                                border-radius: 8px; border: 1px solid var(--yt-divider);">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 4px;">
+                                            <span style="font-size: 13px; font-weight: 500; ${item.completed ? 'color: var(--yt-text-primary)' : 'color: var(--yt-text-secondary)'};">
+                                                ${item.video}
+                                            </span>
+                                            ${item.completed ? `
+                                                <span class="material-icons" style="font-size: 18px; color: ${trail.color};">check_circle</span>
+                                            ` : ''}
+                                        </div>
+                                        <div style="display: flex; gap: 12px; font-size: 11px; color: var(--yt-text-secondary);">
+                                            <span>⏱️ ${item.duration}</span>
+                                            ${item.date ? `<span>✓ ${item.date}</span>` : '<span style="color: var(--yt-blue);">Up next</span>'}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Path Summary -->
+                        <div style="margin-top: 16px; padding: 12px; background: #E8F0FE; border-radius: 8px; font-size: 12px; line-height: 18px; color: var(--yt-text-secondary);">
+                            📊 Your learning journey is ${progressPercent}% complete. Keep going!
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Fallback
+            return '<div></div>';
+        }
+
+        // Parked Videos Screen
+        function renderParkedScreen() {
+            const toWatch = mockParkedVideos.filter(v => !v.watched);
+            const watched = mockParkedVideos.filter(v => v.watched);
+
+            return `
+                <div class="yt-header">
+                    <div class="yt-logo">
+                        <div class="yt-logo-icon">▶</div>
+                        <span class="yt-logo-text">Parked Videos</span>
+                    </div>
+                </div>
+
+                <div class="summary-bar">
+                    <div class="summary-item">
+                        <span class="summary-value">${toWatch.length}</span>
+                        <span class="summary-label">To Watch</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">${toWatch.reduce((sum, v) => {
+                            const [min] = v.duration.split(':').map(Number);
+                            return sum + min;
+                        }, 0)}m</span>
+                        <span class="summary-label">Total Time</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">${watched.length}</span>
+                        <span class="summary-label">Watched</span>
+                    </div>
+                </div>
+
+                <div class="yt-chips-bar">
+                    <button class="yt-chip has-tooltip-small ${state.parkedTab === 'towatch' ? 'active' : ''}" 
+                            onclick="changeParkedTab('towatch')">
+                        To Watch (${toWatch.length})
+                        <div class="tooltip-small">⏱️ Parked for later</div>
+                    </button>
+                    <button class="yt-chip has-tooltip-small ${state.parkedTab === 'watched' ? 'active' : ''}" 
+                            onclick="changeParkedTab('watched')">
+                        Watched (${watched.length})
+                        <div class="tooltip-small">✅ Already watched</div>
+                    </button>
+                </div>
+
+                <div class="yt-content">
+                    ${renderParkedVideos()}
+                </div>
+
+                ${renderBottomNav()}
+                ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
+                ${state.showOnboarding ? renderOnboarding() : ''}
+            `;
+        }
+
+        function renderParkedVideos() {
+            const videos = state.parkedTab === 'towatch' 
+                ? mockParkedVideos.filter(v => !v.watched)
+                : mockParkedVideos.filter(v => v.watched);
+
+            if (videos.length === 0) {
+                return `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📑</div>
+                        <div class="empty-state-title">No videos yet</div>
+                        <div class="empty-state-text">Park videos from your feed to watch them later</div>
+                    </div>
+                `;
+            }
+
+            return videos.map(video => `
+                <div class="parked-video-item">
+                    <div class="parked-header">
+                        <div class="parked-thumbnail">
+                            <div class="yt-duration">${video.duration}</div>
+                        </div>
+                        <div class="parked-info">
+                            <div class="parked-title">${video.title}</div>
+                            <div style="font-size: 12px; color: var(--yt-text-secondary); margin-top: 4px;">
+                                ${video.channel}
+                            </div>
+                        </div>
+                    </div>
+                    ${video.notes ? `<div class="parked-notes">📝 ${video.notes}</div>` : ''}
+                    <div class="yt-video-actions">
+                        <button class="yt-action-btn" onclick="showAddToTrailModal('${video.id}')">
+                            <span class="material-icons">add_circle_outline</span>
+                            Add to Trail
+                        </button>
+                        <button class="yt-action-btn">
+                            <span class="material-icons">${video.watched ? 'check_circle' : 'play_circle'}</span>
+                            ${video.watched ? 'Watched' : 'Watch'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Create Trail Screen
+        function renderCreateTrailScreen() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-header-back">
+                        <button class="yt-icon-btn" onclick="goBack()">
+                            <span class="material-icons">close</span>
+                        </button>
+                        <span class="yt-header-title">Create Trail</span>
+                    </div>
+                </div>
+
+                <div class="yt-content">
+                    <div style="padding: 16px 0;">
+                        <div class="form-group">
+                            <label class="form-label">Trail Name *</label>
+                            <input type="text" class="form-input" placeholder="e.g., Web Development Mastery"
+                                   value="${state.createTrailData.name}" 
+                                   oninput="updateCreateTrailField('name', this.value)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description *</label>
+                            <textarea class="form-input form-textarea" 
+                                      placeholder="Describe what this trail covers..."
+                                      oninput="updateCreateTrailField('description', this.value)">${state.createTrailData.description}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Topic *</label>
+                            <div class="yt-chips-bar" style="padding: 0; border: none;">
+                                ${['Technology', 'Science', 'Cooking', 'Education', 'Entertainment'].map(topic => `
+                                    <button class="yt-chip ${state.createTrailData.topic === topic ? 'active' : ''}"
+                                            onclick="updateCreateTrailField('topic', '${topic}')">
+                                        ${topic}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Skill Level</label>
+                            <div class="yt-chips-bar" style="padding: 0; border: none;">
+                                ${['Beginner', 'Intermediate', 'Advanced', 'Expert'].map(level => `
+                                    <button class="yt-chip ${state.createTrailData.skillLevel === level ? 'active' : ''}"
+                                            onclick="updateCreateTrailField('skillLevel', '${level}')">
+                                        ${level}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Content Focus</label>
+                            <div class="focus-slider-section" style="margin: 0;">
+                                <div class="focus-slider-header">
+                                    <span class="focus-slider-label">Focus Ratio</span>
+                                    <span class="focus-slider-value">${state.createTrailData.focusRatio}%</span>
+                                </div>
+                                <input type="range" class="yt-slider" min="0" max="100" 
+                                       value="${state.createTrailData.focusRatio}" 
+                                       oninput="updateCreateTrailField('focusRatio', this.value)">
+                                <div class="slider-labels">
+                                    <span class="slider-label-text">Mixed</span>
+                                    <span class="slider-label-text">Focused</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 16px; background: #E8F0FE; margin: 0 16px; border-radius: 12px;">
+                            <p style="font-size: 13px; line-height: 18px; color: var(--yt-text-secondary);">
+                                💡 Your trail will recommend videos based on these settings. You can adjust them later.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fixed-submit">
+                    <button class="btn-submit" 
+                            ${!isCreateTrailValid() ? 'disabled' : ''}
+                            onclick="createTrail()">
+                        Create Trail
+                    </button>
+                </div>
+                ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
+                ${state.showOnboarding ? renderOnboarding() : ''}
+            `;
+        }
+
+        // Profile Screen
+        function renderProfileScreen() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-logo">
+                        <div class="yt-logo-icon">▶</div>
+                        <span class="yt-logo-text">Profile & Settings</span>
+                    </div>
+                </div>
+
+                <div class="yt-content">
+                    <div style="padding: 20px 16px; text-align: center; border-bottom: 1px solid var(--yt-divider);">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                    border-radius: 50%; margin: 0 auto 12px;"></div>
+                        <div style="font-size: 18px; font-weight: 500; margin-bottom: 4px;">Your Name</div>
+                        <div style="font-size: 14px; color: var(--yt-text-secondary);">user@example.com</div>
+                    </div>
+
+                    <div class="settings-list">
+                        <div class="settings-item" onclick="alert('My Trails: ${mockTrails.length} created, ${mockTrails.filter(t => t.following).length} following')">
+                            <span class="settings-label">My Trails Summary</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="settings-value">${mockTrails.length} trails</span>
+                                <span class="material-icons" style="font-size: 20px; color: var(--yt-text-secondary);">
+                                    chevron_right
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="settings-item">
+                            <span class="settings-label">Notification Settings</span>
+                            <div class="yt-toggle ${state.notifications ? 'active' : ''}" 
+                                 onclick="toggleNotifications()">
+                                <div class="yt-toggle-thumb"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-item" onclick="showFocusDefaultModal()">
+                            <span class="settings-label">Default Focus Ratio</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="settings-value">${state.focusDefault}%</span>
+                                <span class="material-icons" style="font-size: 20px; color: var(--yt-text-secondary);">
+                                    chevron_right
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="settings-item">
+                            <span class="settings-label">Parked Videos</span>
+                            <span class="settings-value">${mockParkedVideos.length} videos</span>
+                        </div>
+
+                        <div class="settings-item">
+                            <span class="settings-label">Privacy & Data</span>
+                            <span class="material-icons" style="font-size: 20px; color: var(--yt-text-secondary);">
+                                chevron_right
+                            </span>
+                        </div>
+
+                        <div style="padding: 12px 16px; background: #E8F0FE; border-bottom: 1px solid var(--yt-divider);">
+                            <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--yt-text-primary);">📖 Help & Learning</div>
+                            <div style="font-size: 11px; color: var(--yt-text-secondary); line-height: 16px;">
+                                Choose how you want to learn about features
+                            </div>
+                        </div>
+
+                        <div class="settings-item" onclick="restartOnboarding()">
+                            <div>
+                                <div class="settings-label">Step-by-Step Tutorial</div>
+                                <div style="font-size: 11px; color: var(--yt-text-secondary);">10 steps • Interactive carousel</div>
+                            </div>
+                            <span class="material-icons" style="font-size: 20px; color: var(--yt-text-secondary);">
+                                play_circle_outline
+                            </span>
+                        </div>
+
+                        <div class="settings-item" onclick="changeScreen('featureguide')">
+                            <div>
+                                <div class="settings-label">Complete Guide</div>
+                                <div style="font-size: 11px; color: var(--yt-text-secondary);">All 10 features • Scrollable</div>
+                            </div>
+                            <span class="material-icons" style="font-size: 20px; color: var(--yt-text-secondary);">
+                                menu_book
+                            </span>
+                        </div>
+
+                        <div class="settings-item">
+                            <span class="settings-label">Feedback</span>
+                            <span class="material-icons" style="font-size: 20px; color: var(--yt-text-secondary);">
+                                feedback
+                            </span>
+                        </div>
+
+                        <div class="settings-item" onclick="logout()">
+                            <span class="settings-label" style="color: var(--yt-red);">Log Out</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${renderBottomNav()}
+                ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
+                ${state.showOnboarding ? renderOnboarding() : ''}
+            `;
+        }
+
+        // Complete Guide Screen (Scrollable Documentation)
+        function renderFeatureGuideScreen() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-header-back">
+                        <button class="yt-icon-btn" onclick="goBack()">
+                            <span class="material-icons">arrow_back</span>
+                        </button>
+                        <span class="yt-header-title">Complete Guide</span>
+                    </div>
+                </div>
+
+                <div class="yt-content">
+                    <div style="padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">📖 Complete Feature Guide</div>
+                        <div style="font-size: 13px; line-height: 20px; opacity: 0.95;">
+                            Scroll through all features at your own pace. Read what you need, skip what you don't.
+                        </div>
+                    </div>
+
+                    <!-- All 10 cards in scrollable format -->
+                    ${featureDocumentation.map((doc, index) => `
+                        <div style="padding: 20px 16px; border-bottom: 1px solid var(--yt-divider); background: ${index % 2 === 0 ? 'white' : '#FAFAFA'};">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="font-size: 36px;">${doc.icon}</span>
+                                <div>
+                                    <h3 style="font-size: 18px; font-weight: 500; margin-bottom: 2px;">${doc.title}</h3>
+                                    <p style="font-size: 12px; color: var(--yt-text-secondary);">${doc.subtitle}</p>
+                                </div>
+                            </div>
+                            <div style="margin-left: 48px;">
+                                ${doc.content}
+                            </div>
+                        </div>
+                    `).join('')}
+
+                    <div style="padding: 24px 16px; background: #E8F0FE; text-align: center;">
+                        <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">🎉 That's Everything!</div>
+                        <div style="font-size: 12px; color: var(--yt-text-secondary); line-height: 18px; margin-bottom: 16px;">
+                            You now know all the features. Start exploring and look for ℹ️ icons for quick reminders!
+                        </div>
+                        <button class="onboarding-btn onboarding-btn-primary" onclick="changeScreen('home'); state.isTrailFeed = true; render();" style="width: auto; padding: 10px 24px;">
+                            Start Using Trails
+                        </button>
+                    </div>
+                </div>
+
+                ${renderBottomNav()}
+                ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
+            `;
+        }
+
+        // Bottom Navigation
+        function renderBottomNav() {
+            const navItems = [
+                { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: '🏠 Home Feed - Browse videos' },
+                { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails', tooltip: '🗺️ My Trails - Following & Created' },
+                { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: '➕ Create new Trail' },
+                { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked', tooltip: '📑 Parked Videos - Watch Later' },
+                { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: '👤 Profile & Settings' },
+            ];
+
+            return `
+                <div class="yt-bottom-nav">
+                    ${navItems.map(item => `
+                        <button class="yt-nav-item has-tooltip-small ${state.currentBottomTab === item.id ? 'active' : ''}" 
+                                onclick="changeBottomTab('${item.id}', '${item.screen}')">
+                            <span class="material-icons">${item.icon}</span>
+                            ${item.label ? `<span class="yt-nav-label">${item.label}</span>` : ''}
+                            <div class="tooltip-small">${item.tooltip}</div>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Actions
+        function changeScreen(screen) {
+            state.currentScreen = screen;
+            render();
+        }
+
+        function goBack() {
+            if (state.currentScreen === 'traildetail') {
+                state.currentScreen = 'mytrails';
+            } else {
+                state.currentScreen = 'home';
+            }
+            render();
+        }
+
+        function toggleFeed() {
+            state.isTrailFeed = !state.isTrailFeed;
+            state.focusSliderExpanded = false; // Collapse slider when switching
+            render();
+        }
+
+        function selectChip(chipId) {
+            state.selectedChip = chipId;
+            render();
+        }
+
+        function selectTrail(trailName) {
+            state.activeTrail = trailName;
+            // Reset to default main topics for this trail
+            const topicMap = topicMaps[trailName];
+            state.selectedMainTopicLeft = topicMap.leftMain;
+            state.selectedMainTopicRight = topicMap.rightMain;
+            state.selectedMetaTagsLeft = [];
+            state.selectedMetaTagsRight = [];
+            state.searchQueryLeft = '';
+            state.searchQueryRight = '';
+            render();
+        }
+
+        function toggleSlider() {
+            state.focusSliderExpanded = !state.focusSliderExpanded;
+            render();
+        }
+
+        function showTopicMap(side) {
+            if (side === 'left') {
+                state.showTopicMapLeft = true;
+                state.showTopicMapRight = false;
+            } else {
+                state.showTopicMapLeft = false;
+                state.showTopicMapRight = true;
+            }
+            render();
+        }
+
+        function closeTopicMap() {
+            state.showTopicMapLeft = false;
+            state.showTopicMapRight = false;
+            // Clear search when closing
+            state.searchQueryLeft = '';
+            state.searchQueryRight = '';
+            // Now do full render to update slider labels
+            render();
+        }
+
+        function selectMainTopic(side, topic) {
+            if (side === 'left') {
+                state.selectedMainTopicLeft = topic;
+            } else {
+                state.selectedMainTopicRight = topic;
+            }
+            // Update only the modal content, not full page
+            updateModalOnly();
+        }
+
+        function toggleMetaTag(side, tag) {
+            if (side === 'left') {
+                const index = state.selectedMetaTagsLeft.indexOf(tag);
+                if (index > -1) {
+                    state.selectedMetaTagsLeft.splice(index, 1);
+                } else {
+                    state.selectedMetaTagsLeft.push(tag);
+                }
+            } else {
+                const index = state.selectedMetaTagsRight.indexOf(tag);
+                if (index > -1) {
+                    state.selectedMetaTagsRight.splice(index, 1);
+                } else {
+                    state.selectedMetaTagsRight.push(tag);
+                }
+            }
+            // Update only the modal content, not full page
+            updateModalOnly();
+        }
+
+        function updateSearch(side, query) {
+            if (side === 'left') {
+                state.searchQueryLeft = query;
+            } else {
+                state.searchQueryRight = query;
+            }
+            // Update only the modal content, not full page
+            updateModalOnly();
+        }
+
+        function updateModalOnly() {
+            // Only update the modal content without full page re-render
+            const existingModal = document.querySelector('.topic-map');
+            if (existingModal) {
+                const modalHTML = renderTopicMap();
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = modalHTML;
+                const newModal = tempDiv.querySelector('.topic-map');
+                if (newModal) {
+                    existingModal.innerHTML = newModal.innerHTML;
+                }
+            }
+        }
+
+        function updateFocus(value) {
+            state.focusRatio = parseInt(value);
+            render();
+        }
+
+        function dismissBanner() {
+            state.showSuggestion = false;
+            render();
+        }
+
+        function changeBottomTab(tabId, screen) {
+            state.currentBottomTab = tabId;
+            state.currentScreen = screen;
+            render();
+        }
+
+        function parkVideo(videoId) {
+            alert('Video parked! View it in the Parked tab.');
+        }
+
+        function showAddToTrailModal(videoId) {
+            const trailNames = mockTrails.map(t => t.name).join('\n');
+            alert(`Add to Trail:\n\n${trailNames}\n\n(Select trail to add video)`);
+        }
+
+        function viewTrail(trailId) {
+            state.selectedTrail = trailId;
+            state.currentScreen = 'traildetail';
+            render();
+        }
+
+        function changeTrailDetailTab(tab) {
+            state.trailDetailTab = tab;
+            render();
+        }
+
+        function toggleFollow(trailId) {
+            const trail = mockTrails.find(t => t.id === trailId);
+            if (trail) {
+                trail.following = !trail.following;
+                render();
+            }
+        }
+
+        function changeMyTrailsTab(tab) {
+            state.myTrailsTab = tab;
+            render();
+        }
+
+        function changeParkedTab(tab) {
+            state.parkedTab = tab;
+            render();
+        }
+
+        function updateCreateTrailField(field, value) {
+            state.createTrailData[field] = value;
+            render();
+        }
+
+        function isCreateTrailValid() {
+            return state.createTrailData.name.trim() && 
+                   state.createTrailData.description.trim() && 
+                   state.createTrailData.topic;
+        }
+
+        function createTrail() {
+            if (!isCreateTrailValid()) return;
+            
+            alert(`Trail Created!\n\nName: ${state.createTrailData.name}\nTopic: ${state.createTrailData.topic}\nFocus: ${state.createTrailData.focusRatio}%`);
+            
+            // Reset form
+            state.createTrailData = {
+                name: '',
+                description: '',
+                topic: '',
+                region: 'Global',
+                skillLevel: 'Beginner',
+                focusRatio: 70,
+            };
+            
+            state.currentScreen = 'mytrails';
+            state.myTrailsTab = 'created';
+            render();
+        }
+
+        function toggleNotifications() {
+            state.notifications = !state.notifications;
+            render();
+        }
+
+        function showFocusDefaultModal() {
+            const newValue = prompt('Set default focus ratio (0-100):', state.focusDefault);
+            if (newValue !== null) {
+                const val = parseInt(newValue);
+                if (val >= 0 && val <= 100) {
+                    state.focusDefault = val;
+                    render();
+                }
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to log out?')) {
+                alert('Logged out successfully!');
+            }
+        }
+
+        // Onboarding Navigation
+        function onboardingNext() {
+            if (state.onboardingStep < featureDocumentation.length - 1) {
+                state.onboardingStep++;
+                render();
+            }
+        }
+
+        function onboardingBack() {
+            if (state.onboardingStep > 0) {
+                state.onboardingStep--;
+                render();
+            }
+        }
+
+        function skipOnboarding() {
+            state.showOnboarding = false;
+            render();
+        }
+
+        function finishOnboarding() {
+            state.showOnboarding = false;
+            // Auto-enable Trail Feed to show the main feature
+            state.isTrailFeed = true;
+            render();
+        }
+
+        function restartOnboarding() {
+            state.showOnboarding = true;
+            state.onboardingStep = 0;
+            render();
+        }
+
+        // Feature Help Functions
+        function showFeatureHelp(featureKey) {
+            state.showFeatureHelp = featureKey;
+            render();
+        }
+
+        function closeFeatureHelp() {
+            state.showFeatureHelp = null;
+            render();
+        }
+
+        function renderFeatureHelpModal() {
+            if (!state.showFeatureHelp || !featureHelp[state.showFeatureHelp]) return '';
+            
+            const help = featureHelp[state.showFeatureHelp];
+            
+            return `
+                <div class="feature-help-overlay" onclick="closeFeatureHelp()">
+                    <div class="feature-help-modal" onclick="event.stopPropagation()">
+                        <div class="feature-help-header">
+                            <span class="feature-help-title">${help.title}</span>
+                            <button class="yt-icon-btn" style="width: 28px; height: 28px;" onclick="closeFeatureHelp()">
+                                <span class="material-icons" style="font-size: 18px;">close</span>
+                            </button>
+                        </div>
+                        <div class="feature-help-text">${help.text}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let lastScrollTop = 0;
+        let scrollListenerAdded = false;
+
+        // Smart Tooltip Positioning with Edge Detection
+        function initializeTooltips() {
+            const tooltipElements = document.querySelectorAll('.has-tooltip-small');
+            
+            tooltipElements.forEach((element) => {
+                element.addEventListener('mouseenter', function() {
+                    const tooltip = this.querySelector('.tooltip-small');
+                    if (!tooltip) return;
+                    
+                    // Get phone container bounds (the visible area)
+                    const phoneContainer = document.querySelector('.phone-container');
+                    const containerRect = phoneContainer.getBoundingClientRect();
+                    const containerLeft = containerRect.left;
+                    const containerRight = containerRect.right;
+                    const containerWidth = containerRect.width;
+                    
+                    // Get element position
+                    const elementRect = this.getBoundingClientRect();
+                    const elementCenterX = elementRect.left + (elementRect.width / 2);
+                    const elementTop = elementRect.top;
+                    
+                    // Show tooltip to measure it
+                    tooltip.style.visibility = 'hidden';
+                    tooltip.style.opacity = '0';
+                    tooltip.style.display = 'block';
+                    
+                    const tooltipWidth = tooltip.offsetWidth;
+                    const tooltipHeight = tooltip.offsetHeight;
+                    
+                    // Calculate ideal centered position
+                    let tooltipLeft = elementCenterX - (tooltipWidth / 2);
+                    const tooltipTop = elementTop - tooltipHeight - 10; // 10px gap above element
+                    
+                    // Edge detection and correction
+                    const padding = 8; // 8px padding from container edges
+                    
+                    // Check left edge
+                    if (tooltipLeft < containerLeft + padding) {
+                        tooltipLeft = containerLeft + padding;
+                    }
+                    
+                    // Check right edge
+                    if (tooltipLeft + tooltipWidth > containerRight - padding) {
+                        tooltipLeft = containerRight - padding - tooltipWidth;
+                    }
+                    
+                    // Calculate arrow position (should point to element center)
+                    const arrowLeftOffset = elementCenterX - tooltipLeft;
+                    
+                    // Apply positioning
+                    tooltip.style.left = tooltipLeft + 'px';
+                    tooltip.style.top = tooltipTop + 'px';
+                    tooltip.style.opacity = '1';
+                    tooltip.style.visibility = 'visible';
+                    
+                    // Position the arrow to point at the element
+                    const arrow = tooltip.querySelector('::after') || tooltip;
+                    tooltip.style.setProperty('--arrow-left', arrowLeftOffset + 'px');
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    const tooltip = this.querySelector('.tooltip-small');
+                    if (tooltip) {
+                        tooltip.style.opacity = '0';
+                        setTimeout(() => {
+                            tooltip.style.visibility = 'hidden';
+                            tooltip.style.display = 'none';
+                        }, 200);
+                    }
+                });
+            });
+        }
+
+        function render() {
+            document.getElementById('app').innerHTML = renderApp();
+            
+            // Initialize tooltips after DOM is ready
+            setTimeout(() => {
+                initializeTooltips();
+            }, 50);
+            
+            // Add scroll listener for topic header visibility
+            if (state.isTrailFeed && !scrollListenerAdded) {
+                setTimeout(() => {
+                    const contentArea = document.querySelector('.yt-content');
+                    if (contentArea) {
+                        contentArea.addEventListener('scroll', function() {
+                            const topicHeader = document.getElementById('topicHeader');
+                            if (!topicHeader) return;
+                            
+                            const scrollTop = this.scrollTop;
+                            
+                            if (scrollTop > lastScrollTop && scrollTop > 30) {
+                                // Scrolling down - hide header
+                                topicHeader.style.opacity = '0';
+                                topicHeader.style.maxHeight = '0';
+                                topicHeader.style.padding = '0 16px';
+                            } else if (scrollTop < lastScrollTop || scrollTop < 10) {
+                                // Scrolling up or near top - show header
+                                topicHeader.style.opacity = '1';
+                                topicHeader.style.maxHeight = '100px';
+                                topicHeader.style.padding = '12px 16px 8px 16px';
+                            }
+                            
+                            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+                        });
+                        scrollListenerAdded = true;
+                    }
+                }, 100);
+            } else if (!state.isTrailFeed) {
+                scrollListenerAdded = false;
+            }
+        }
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
