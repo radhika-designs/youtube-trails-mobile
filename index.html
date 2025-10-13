@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.7 - Correct Logic: Chips Behind Slider When Expanded 🚀</title>
+    <title>YouTube Trails v5.4.8 - Simple Two States: Chips 250, Slider 300 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -230,7 +230,7 @@
         .yt-chips-bar {
             position: sticky;
             top: 60px;
-            z-index: 300; /* Higher z-index when slider is collapsed */
+            z-index: 250; /* Default lower z-index */
             display: flex;
             gap: 8px;
             padding: 12px 16px;
@@ -238,12 +238,6 @@
             overflow-y: visible; /* Allow tooltips to show above */
             background: var(--yt-white);
             border-bottom: 1px solid var(--yt-divider);
-            transition: z-index 0.3s ease;
-        }
-
-        /* When slider is expanded, chips should be behind it */
-        .yt-chips-bar.slider-expanded {
-            z-index: 250; /* Lower z-index when slider is expanded */
         }
 
 
@@ -364,7 +358,7 @@
             left: 16px;
             right: 16px;
             top: 48px;
-            z-index: 350; /* Above chips (300) but not too high */
+            z-index: 300; /* Higher than chips (250) */
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             overflow: visible; /* Allow tooltips in expanded state */
         }
@@ -2493,7 +2487,7 @@
                 ];
 
                 return `
-                    <div class="yt-chips-bar ${state.focusSliderExpanded ? 'slider-expanded' : ''}">
+                    <div class="yt-chips-bar">
                         ${trailChips.map(chip => `
                             <button class="yt-chip has-tooltip-small ${state.activeTrail === chip.id ? 'active' : ''}" 
                                     onclick="selectTrail('${chip.id}')">
@@ -2512,7 +2506,7 @@
                 ];
 
                 return `
-                    <div class="yt-chips-bar ${state.focusSliderExpanded ? 'slider-expanded' : ''}">
+                    <div class="yt-chips-bar">
                         ${chips.map(chip => `
                             <button class="yt-chip ${state.selectedChip === chip.id ? 'active' : ''}" 
                                     onclick="selectChip('${chip.id}')">
