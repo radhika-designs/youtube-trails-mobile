@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.3 - Live on GitHub Pages 🚀</title>
+    <title>YouTube Trails v5.4 - Phase 1 Complete 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -992,6 +992,25 @@
             font-weight: 400;
         }
 
+        /* Badge Counter */
+        .nav-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: var(--yt-red);
+            color: white;
+            font-size: 10px;
+            font-weight: 500;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            line-height: 1;
+        }
+
         /* Form Elements */
         .form-group {
             margin-bottom: 20px;
@@ -1491,6 +1510,46 @@
             justify-content: center;
             animation: fadeIn 0.2s ease;
             border-radius: 40px; /* Match phone container */
+        }
+
+        /* Toast Notification System */
+        .toast-container {
+            position: fixed;
+            bottom: 80px; /* Above bottom nav */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #323232;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            max-width: 300px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success {
+            background: #4CAF50;
+        }
+
+        .toast.info {
+            background: #2196F3;
         }
 
         @keyframes fadeIn {
@@ -2226,6 +2285,9 @@
                 ${renderBottomNav()}
                 ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
                 ${state.showOnboarding ? renderOnboarding() : ''}
+                
+                <!-- Toast Container -->
+                <div class="toast-container" id="toastContainer"></div>
             `;
         }
 
@@ -2695,6 +2757,9 @@
                 ${renderBottomNav()}
                 ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
                 ${state.showOnboarding ? renderOnboarding() : ''}
+                
+                <!-- Toast Container -->
+                <div class="toast-container" id="toastContainer"></div>
             `;
         }
 
@@ -2832,6 +2897,9 @@
                 ${renderBottomNav()}
                 ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
                 ${state.showOnboarding ? renderOnboarding() : ''}
+                
+                <!-- Toast Container -->
+                <div class="toast-container" id="toastContainer"></div>
             `;
         }
 
@@ -3025,6 +3093,9 @@
                 ${renderBottomNav()}
                 ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
                 ${state.showOnboarding ? renderOnboarding() : ''}
+                
+                <!-- Toast Container -->
+                <div class="toast-container" id="toastContainer"></div>
             `;
         }
 
@@ -3262,6 +3333,9 @@
                 ${renderBottomNav()}
                 ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
                 ${state.showOnboarding ? renderOnboarding() : ''}
+                
+                <!-- Toast Container -->
+                <div class="toast-container" id="toastContainer"></div>
             `;
         }
 
@@ -3319,11 +3393,15 @@
 
         // Bottom Navigation
         function renderBottomNav() {
+            // Calculate badge counts
+            const parkedCount = state.parkedVideos ? state.parkedVideos.length : 0;
+            const trailsCount = mockTrails.filter(t => t.following).length;
+            
             const navItems = [
                 { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: '🏠 Home Feed - Browse videos' },
-                { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails', tooltip: '🗺️ My Trails - Following & Created' },
+                { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails', tooltip: '🗺️ My Trails - Following & Created', badge: trailsCount > 0 ? trailsCount : null },
                 { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: '➕ Create new Trail' },
-                { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked', tooltip: '📑 Parked Videos - Watch Later' },
+                { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked', tooltip: '📑 Parked Videos - Watch Later', badge: parkedCount > 0 ? parkedCount : null },
                 { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: '👤 Profile & Settings' },
             ];
 
@@ -3334,6 +3412,7 @@
                                 onclick="changeBottomTab('${item.id}', '${item.screen}')">
                             <span class="material-icons">${item.icon}</span>
                             ${item.label ? `<span class="yt-nav-label">${item.label}</span>` : ''}
+                            ${item.badge ? `<span class="nav-badge">${item.badge}</span>` : ''}
                             <div class="tooltip-small">${item.tooltip}</div>
                         </button>
                     `).join('')}
@@ -3414,6 +3493,7 @@
             }
             // Update only the modal content, not full page
             updateModalOnly();
+            showToast(`🎯 ${side} topic set to ${topic}`, 'info');
         }
 
         function toggleMetaTag(side, tag) {
@@ -3462,6 +3542,11 @@
 
         function updateFocus(value) {
             state.focusRatio = parseInt(value);
+            const leftPercent = state.focusRatio;
+            const rightPercent = 100 - state.focusRatio;
+            const leftTopic = state.selectedMainTopicLeft || 'Left';
+            const rightTopic = state.selectedMainTopicRight || 'Right';
+            showToast(`⚖️ Mix: ${leftPercent}% ${leftTopic} ↔ ${rightPercent}% ${rightTopic}`, 'info', 2000);
             render();
         }
 
@@ -3477,12 +3562,19 @@
         }
 
         function parkVideo(videoId) {
-            alert('Video parked! View it in the Parked tab.');
+            // Add to parked videos (mock)
+            if (!state.parkedVideos) state.parkedVideos = [];
+            const video = mockVideos.find(v => v.id === videoId) || 
+                         mockRegularVideos.find(v => v.id === videoId);
+            if (video && !state.parkedVideos.find(v => v.id === videoId)) {
+                state.parkedVideos.push(video);
+            }
+            showToast('📌 Video parked! Check Parked tab', 'success');
         }
 
         function showAddToTrailModal(videoId) {
             const trailNames = mockTrails.map(t => t.name).join('\n');
-            alert(`Add to Trail:\n\n${trailNames}\n\n(Select trail to add video)`);
+            showToast('✅ Added to Web Dev trail', 'success');
         }
 
         function viewTrail(trailId) {
@@ -3634,6 +3726,59 @@
         let lastScrollTop = 0;
         let scrollListenerAdded = false;
 
+        // Toast Notification System
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (container.contains(toast)) {
+                        container.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // localStorage Persistence System
+        function saveState() {
+            const stateToSave = {
+                parkedVideos: state.parkedVideos || [],
+                selectedMainTopicLeft: state.selectedMainTopicLeft,
+                selectedMainTopicRight: state.selectedMainTopicRight,
+                selectedMetaTagsLeft: state.selectedMetaTagsLeft || [],
+                selectedMetaTagsRight: state.selectedMetaTagsRight || [],
+                focusRatio: state.focusRatio,
+                activeTrail: state.activeTrail,
+                isTrailFeed: state.isTrailFeed
+            };
+            localStorage.setItem('youtubeTrailsState', JSON.stringify(stateToSave));
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('youtubeTrailsState');
+                if (saved) {
+                    const savedState = JSON.parse(saved);
+                    // Merge saved state with current state
+                    Object.assign(state, savedState);
+                }
+            } catch (e) {
+                console.log('Could not load saved state:', e);
+            }
+        }
+
         // Smart Tooltip Positioning with Edge Detection
         function initializeTooltips() {
             const tooltipElements = document.querySelectorAll('.has-tooltip-small');
@@ -3715,6 +3860,9 @@
                 initializeTooltips();
             }, 50);
             
+            // Save state after render
+            saveState();
+            
             // Add scroll listener for topic header visibility
             if (state.isTrailFeed && !scrollListenerAdded) {
                 setTimeout(() => {
@@ -3748,7 +3896,8 @@
             }
         }
 
-        // Initial render
+        // Load saved state and initial render
+        loadState();
         render();
     </script>
 </body>
