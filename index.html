@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.2 - Live on GitHub Pages 🚀</title>
+    <title>YouTube Trails v5.3 - Live on GitHub Pages 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -2366,9 +2366,10 @@
                 return `
                     <div class="yt-chips-bar">
                         ${trailChips.map(chip => `
-                            <button class="yt-chip ${state.activeTrail === chip.id ? 'active' : ''}" 
+                            <button class="yt-chip has-tooltip-small ${state.activeTrail === chip.id ? 'active' : ''}" 
                                     onclick="selectTrail('${chip.id}')">
                                 ${chip.label}
+                                <div class="tooltip-small">📚 User-created trail for ${chip.label} content</div>
                             </button>
                         `).join('')}
                     </div>

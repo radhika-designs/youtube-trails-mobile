@@ -4,8 +4,28 @@ Complete changelog documenting the evolution of the YouTube Trails web prototype
 
 ---
 
-## 🚀 v5.2 - Current Version (Oct 12, 2025)
+## 🎯 v5.3 - Current Version (Oct 12, 2025)
 **Status:** ✅ Live on GitHub Pages
+
+### Changes:
+- Reduced phone container height from 926px to 800px for better screen fit
+- Added tooltips to trail chips (Web Dev, Science, Cooking)
+- Tooltips explain: "User-created trail for [topic] content"
+- Improved discoverability of trail selection feature
+
+### User Experience:
+- Phone frame now fits comfortably on most laptop screens
+- Users understand the purpose of trail chips on hover
+- Better guidance for first-time users
+
+### Files Modified:
+- `index.html` - Updated height and added trail chip tooltips
+- `VERSION_HISTORY.md` - This file!
+
+---
+
+## 🔧 v5.2 (Oct 12, 2025)
+**Status:** ✅ Stable
 
 ### Changes:
 - Fixed bubble labels to show "Tap to select" instead of topic names
