@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.11 - Restored Slider to Toggle Bar (Original Design) 🚀</title>
+    <title>YouTube Trails v5.4.12 - Dynamic Z-Index: Chips Hide Behind Expanded Slider 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -230,7 +230,7 @@
         .yt-chips-bar {
             position: sticky;
             top: 60px;
-            z-index: 250; /* Default lower z-index */
+            z-index: 250; /* Default lower z-index - will be dynamically changed by JS */
             display: flex;
             gap: 8px;
             padding: 12px 16px;
@@ -3650,6 +3650,26 @@
             render();
         }
 
+        function toggleSlider() {
+            state.focusSliderExpanded = !state.focusSliderExpanded;
+            
+            // Dynamically manage z-index based on slider state
+            setTimeout(() => {
+                const chipsBar = document.querySelector('.yt-chips-bar');
+                if (chipsBar) {
+                    if (state.focusSliderExpanded) {
+                        // Slider expanded: chips behind (lower z-index)
+                        chipsBar.style.zIndex = '200';
+                    } else {
+                        // Slider collapsed: chips on top (higher z-index)
+                        chipsBar.style.zIndex = '300';
+                    }
+                }
+            }, 10);
+            
+            render();
+        }
+
         function dismissBanner() {
             state.showSuggestion = false;
             render();
@@ -4025,6 +4045,20 @@
             setTimeout(() => {
                 initializeTooltips();
             }, 50);
+            
+            // Set initial z-index for chips bar based on slider state
+            setTimeout(() => {
+                const chipsBar = document.querySelector('.yt-chips-bar');
+                if (chipsBar) {
+                    if (state.focusSliderExpanded) {
+                        // Slider expanded: chips behind (lower z-index)
+                        chipsBar.style.zIndex = '200';
+                    } else {
+                        // Slider collapsed: chips on top (higher z-index)
+                        chipsBar.style.zIndex = '300';
+                    }
+                }
+            }, 60);
             
             // Save state after render
             saveState();
