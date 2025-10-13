@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.2 - Material Design & Two-Topic Create Trail 🚀</title>
+    <title>YouTube Trails v5.4.3 - Custom Create Trail Design & Enhanced Slider UI 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -338,12 +338,14 @@
 
         /* Collapsible Focus Slider - Inline */
         .focus-slider-section {
-            background: #F9F9F9;
-            border-radius: 4px; /* Material Design standard */
+            background: #F5F5F5;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px; /* More prominent border radius */
             overflow: visible; /* Changed from hidden - allow tooltips to show */
             transition: all 0.3s ease;
             flex: 1;
             min-width: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .focus-slider-section.inline-mode {
@@ -391,8 +393,11 @@
         .focus-slider-expanded {
             padding: 16px 12px 12px 12px; /* Increased top padding for tooltips */
             background: var(--yt-white);
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
             position: relative; /* Create positioning context */
             overflow: visible; /* Allow tooltips to show */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
         .focus-slider-header {
@@ -1042,6 +1047,38 @@
         .form-textarea {
             min-height: 100px;
             resize: vertical;
+        }
+
+        /* Custom Form Slider for Create Trail */
+        .form-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #E0E0E0;
+            border-radius: 3px;
+            outline: none;
+            margin: 8px 0;
+        }
+
+        .form-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--yt-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid white;
+        }
+
+        .form-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--yt-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid white;
         }
 
         /* Parked Video Item */
@@ -3155,7 +3192,7 @@
                 </div>
 
                 <div class="yt-content">
-                    <div style="padding: 16px 0;">
+                    <div style="padding: 16px;">
                         <div class="form-group">
                             <label class="form-label">Trail Name *</label>
                             <input type="text" class="form-input" placeholder="e.g., Web Development Mastery"
@@ -3185,40 +3222,63 @@
 
                         <div class="form-group">
                             <label class="form-label">Content Focus</label>
-                            <div class="focus-slider-section" style="margin: 0;">
-                                <div class="focus-slider-header">
-                                    <span class="focus-slider-label">Focus Ratio</span>
-                                    <span class="focus-slider-value">${state.createTrailData.focusRatio}%</span>
+                            
+                            <!-- Custom Two-Topic Selection for Create Trail -->
+                            <div style="background: #F8F9FA; border: 1px solid #E9ECEF; border-radius: 8px; padding: 16px; margin: 8px 0;">
+                                <div style="text-align: center; margin-bottom: 16px;">
+                                    <span style="font-size: 12px; color: var(--yt-text-secondary);">Choose two topics to blend in your trail</span>
                                 </div>
                                 
-                                <!-- Topic Selection -->
-                                <div class="topic-bubbles" style="margin-bottom: 12px;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                                        <div class="topic-bubble" style="background: var(--yt-blue);"
-                                             onclick="showCreateTrailTopicMap('left')">
-                                            ${state.createTrailData.leftTopic ? state.createTrailData.leftTopic.charAt(0) : '◐'}
+                                <!-- Topic Selection Cards -->
+                                <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                                    <!-- Left Topic Card -->
+                                    <div style="flex: 1; background: white; border: 2px solid ${state.createTrailData.leftTopic ? 'var(--yt-blue)' : '#E9ECEF'}; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease;"
+                                         onclick="showCreateTrailTopicMap('left')">
+                                        <div style="font-size: 24px; margin-bottom: 8px;">
+                                            ${state.createTrailData.leftTopic ? state.createTrailData.leftTopic.charAt(0) : '📚'}
                                         </div>
-                                        <span style="font-size: 9px; color: var(--yt-text-secondary); text-align: center;">${state.createTrailData.leftTopic || 'Tap to select'}</span>
-                                    </div>
-                                    <div style="flex: 1; text-align: center; font-size: 11px; color: var(--yt-text-secondary); line-height: 14px;">
-                                        ${state.createTrailData.focusRatio}% ↔ ${100 - state.createTrailData.focusRatio}%
-                                    </div>
-                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                                        <div class="topic-bubble" style="background: var(--yt-blue)dd;"
-                                             onclick="showCreateTrailTopicMap('right')">
-                                            ${state.createTrailData.rightTopic ? state.createTrailData.rightTopic.charAt(0) : '◑'}
+                                        <div style="font-size: 12px; font-weight: 500; color: ${state.createTrailData.leftTopic ? 'var(--yt-text-primary)' : 'var(--yt-text-secondary)'};">
+                                            ${state.createTrailData.leftTopic || 'Select Topic'}
                                         </div>
-                                        <span style="font-size: 9px; color: var(--yt-text-secondary); text-align: center;">${state.createTrailData.rightTopic || 'Tap to select'}</span>
+                                    </div>
+                                    
+                                    <!-- VS Separator -->
+                                    <div style="display: flex; align-items: center; justify-content: center; color: var(--yt-text-secondary); font-size: 14px; font-weight: 500;">
+                                        VS
+                                    </div>
+                                    
+                                    <!-- Right Topic Card -->
+                                    <div style="flex: 1; background: white; border: 2px solid ${state.createTrailData.rightTopic ? 'var(--yt-blue)' : '#E9ECEF'}; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease;"
+                                         onclick="showCreateTrailTopicMap('right')">
+                                        <div style="font-size: 24px; margin-bottom: 8px;">
+                                            ${state.createTrailData.rightTopic ? state.createTrailData.rightTopic.charAt(0) : '📚'}
+                                        </div>
+                                        <div style="font-size: 12px; font-weight: 500; color: ${state.createTrailData.rightTopic ? 'var(--yt-text-primary)' : 'var(--yt-text-secondary)'};">
+                                            ${state.createTrailData.rightTopic || 'Select Topic'}
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <input type="range" class="yt-slider" min="0" max="100" 
-                                       value="${state.createTrailData.focusRatio}" 
-                                       oninput="updateCreateTrailField('focusRatio', this.value)">
-                                <div class="slider-labels">
-                                    <span class="slider-label-text">${state.createTrailData.leftTopic || 'Left'}</span>
-                                    <span class="slider-label-text">${state.createTrailData.rightTopic || 'Right'}</span>
-                                </div>
+                                <!-- Focus Slider -->
+                                ${state.createTrailData.leftTopic && state.createTrailData.rightTopic ? `
+                                    <div style="background: white; border-radius: 8px; padding: 12px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span style="font-size: 12px; font-weight: 500; color: var(--yt-text-primary);">Focus Balance</span>
+                                            <span style="font-size: 12px; font-weight: 500; color: var(--yt-blue);">${state.createTrailData.focusRatio}% ↔ ${100 - state.createTrailData.focusRatio}%</span>
+                                        </div>
+                                        <input type="range" class="form-slider" min="0" max="100" 
+                                               value="${state.createTrailData.focusRatio}" 
+                                               oninput="updateCreateTrailField('focusRatio', this.value)">
+                                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--yt-text-secondary); margin-top: 4px;">
+                                            <span>${state.createTrailData.leftTopic}</span>
+                                            <span>${state.createTrailData.rightTopic}</span>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div style="text-align: center; padding: 20px; color: var(--yt-text-secondary); font-size: 12px;">
+                                        Select both topics to adjust focus balance
+                                    </div>
+                                `}
                             </div>
                         </div>
 
