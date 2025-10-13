@@ -238,7 +238,6 @@
             overflow-y: visible; /* Allow tooltips to show above */
             background: var(--yt-white);
             border-bottom: 1px solid var(--yt-divider);
-            margin-top: -1px; /* Overlap with slider when expanded */
         }
 
 
@@ -355,12 +354,13 @@
         }
 
         .focus-slider-section.expanded-mode {
-            position: sticky;
-            top: 60px;
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 48px;
             z-index: 300; /* Higher than chips (250) */
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             overflow: visible; /* Allow tooltips in expanded state */
-            margin: 0 16px;
         }
         
         .focus-slider-collapsed {
