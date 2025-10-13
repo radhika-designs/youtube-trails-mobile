@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.5 - Dynamic Z-Index Management for Slider & Tooltips 🚀</title>
+    <title>YouTube Trails v5.4.6 - Fixed Slider Close Button & Z-Index Hierarchy 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -358,7 +358,7 @@
             left: 16px;
             right: 16px;
             top: 48px;
-            z-index: 1000; /* High z-index to stay above all content */
+            z-index: 350; /* Above chips (300) but not too high */
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             overflow: visible; /* Allow tooltips in expanded state */
         }
@@ -392,13 +392,36 @@
         }
 
         .focus-slider-expanded {
-            padding: 16px 12px 12px 12px; /* Increased top padding for tooltips */
+            padding: 12px 12px 12px 12px; /* Reduced top padding */
             background: var(--yt-white);
             border: 1px solid #E0E0E0;
             border-radius: 8px;
             position: relative; /* Create positioning context */
             overflow: visible; /* Allow tooltips to show */
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .slider-close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--yt-text-secondary);
+            font-size: 16px;
+            z-index: 10;
+        }
+
+        .slider-close-btn:hover {
+            background: #F5F5F5;
+            color: var(--yt-text-primary);
         }
 
         .focus-slider-header {
@@ -2404,11 +2427,11 @@
             return `
                 <div class="focus-slider-section expanded-mode">
                     <div class="focus-slider-expanded">
+                        <button class="slider-close-btn" onclick="event.stopPropagation(); toggleSlider()" title="Close">
+                            <span class="material-icons" style="font-size: 18px;">close</span>
+                        </button>
                         <div class="focus-slider-header">
                             <span class="focus-slider-label">Content Balance</span>
-                            <button class="yt-icon-btn" style="width: 28px; height: 28px;" onclick="event.stopPropagation(); toggleSlider()">
-                                <span class="material-icons" style="font-size: 20px;">expand_less</span>
-                            </button>
                         </div>
                         
                         <div class="topic-bubbles">
@@ -3537,21 +3560,6 @@
 
         function toggleSlider() {
             state.focusSliderExpanded = !state.focusSliderExpanded;
-            
-            // Manage z-index dynamically
-            setTimeout(() => {
-                const chipsBar = document.querySelector('.yt-chips-bar');
-                if (chipsBar) {
-                    if (state.focusSliderExpanded) {
-                        // When slider is expanded, lower chips z-index
-                        chipsBar.style.zIndex = '250';
-                    } else {
-                        // When slider is collapsed, higher chips z-index for tooltips
-                        chipsBar.style.zIndex = '300';
-                    }
-                }
-            }, 50);
-            
             render();
         }
 
@@ -4015,16 +4023,6 @@
             // Initialize tooltips after DOM is ready
             setTimeout(() => {
                 initializeTooltips();
-                
-                // Set correct z-index for chips bar based on slider state
-                const chipsBar = document.querySelector('.yt-chips-bar');
-                if (chipsBar) {
-                    if (state.focusSliderExpanded) {
-                        chipsBar.style.zIndex = '250';
-                    } else {
-                        chipsBar.style.zIndex = '300';
-                    }
-                }
             }, 50);
             
             // Save state after render
