@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.4 - Fixed Trail Chips Tooltip Z-Index 🚀</title>
+    <title>YouTube Trails v5.4.5 - Dynamic Z-Index Management for Slider & Tooltips 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -239,6 +239,7 @@
             background: var(--yt-white);
             border-bottom: 1px solid var(--yt-divider);
         }
+
 
         .yt-chips-bar::-webkit-scrollbar {
             display: none;
@@ -3536,6 +3537,21 @@
 
         function toggleSlider() {
             state.focusSliderExpanded = !state.focusSliderExpanded;
+            
+            // Manage z-index dynamically
+            setTimeout(() => {
+                const chipsBar = document.querySelector('.yt-chips-bar');
+                if (chipsBar) {
+                    if (state.focusSliderExpanded) {
+                        // When slider is expanded, lower chips z-index
+                        chipsBar.style.zIndex = '250';
+                    } else {
+                        // When slider is collapsed, higher chips z-index for tooltips
+                        chipsBar.style.zIndex = '300';
+                    }
+                }
+            }, 50);
+            
             render();
         }
 
@@ -3999,6 +4015,16 @@
             // Initialize tooltips after DOM is ready
             setTimeout(() => {
                 initializeTooltips();
+                
+                // Set correct z-index for chips bar based on slider state
+                const chipsBar = document.querySelector('.yt-chips-bar');
+                if (chipsBar) {
+                    if (state.focusSliderExpanded) {
+                        chipsBar.style.zIndex = '250';
+                    } else {
+                        chipsBar.style.zIndex = '300';
+                    }
+                }
             }, 50);
             
             // Save state after render
