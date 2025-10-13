@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.8 - Simple Two States: Chips 250, Slider 300 🚀</title>
+    <title>YouTube Trails v5.4.9 - Fixed Tooltip Z-Index: 280 (Below Slider 300) 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -1490,7 +1490,7 @@
             font-size: 11px;
             line-height: 16px;
             white-space: nowrap;
-            z-index: 99999 !important;
+            z-index: 280 !important; /* Lower than slider (300) but higher than chips (250) */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s ease;
