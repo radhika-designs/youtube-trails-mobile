@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4.1 - Phase 1 Fixes 🚀</title>
+    <title>YouTube Trails v5.4.2 - Material Design & Two-Topic Create Trail 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -230,7 +230,7 @@
         .yt-chips-bar {
             position: sticky;
             top: 60px;
-            z-index: 300; /* Higher than trail toggle bar (250) for tooltip visibility */
+            z-index: 200; /* Lower than slider (1000) so slider appears above */
             display: flex;
             gap: 8px;
             padding: 12px 16px;
@@ -248,7 +248,7 @@
             padding: 8px 12px;
             background: #0000000d;
             border: none;
-            border-radius: 8px;
+            border-radius: 16px; /* Material Design standard for chips */
             font-size: 14px;
             font-weight: 500;
             color: var(--yt-text-primary);
@@ -339,7 +339,7 @@
         /* Collapsible Focus Slider - Inline */
         .focus-slider-section {
             background: #F9F9F9;
-            border-radius: 8px;
+            border-radius: 4px; /* Material Design standard */
             overflow: visible; /* Changed from hidden - allow tooltips to show */
             transition: all 0.3s ease;
             flex: 1;
@@ -367,7 +367,7 @@
             justify-content: space-between;
             align-items: center;
             gap: 8px;
-            border-radius: 8px; /* Rounded corners */
+            border-radius: 4px; /* Material Design standard */
         }
 
         .focus-slider-collapsed:hover {
@@ -1523,22 +1523,20 @@
         }
 
         .toast {
-            background: rgba(0, 0, 0, 0.9);
+            background: #323232; /* Material Design Dark Surface */
             color: white;
             padding: 12px 20px;
-            border-radius: 24px;
+            border-radius: 4px; /* Material Design standard radius */
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            box-shadow: 0 3px 5px -1px rgba(0,0,0,0.2), 0 6px 10px 0 rgba(0,0,0,0.14), 0 1px 18px 0 rgba(0,0,0,0.12);
             opacity: 0;
             transform: translateY(-20px);
             transition: all 0.3s ease;
             max-width: 320px;
             text-align: center;
             white-space: nowrap;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
         }
 
         .toast.show {
@@ -1547,13 +1545,11 @@
         }
 
         .toast.success {
-            background: rgba(76, 175, 80, 0.95);
-            border-color: rgba(76, 175, 80, 0.3);
+            background: #4CAF50; /* Material Design Green 500 */
         }
 
         .toast.info {
-            background: rgba(33, 150, 243, 0.95);
-            border-color: rgba(33, 150, 243, 0.3);
+            background: #2196F3; /* Material Design Blue 500 */
         }
 
         @keyframes fadeIn {
@@ -3194,12 +3190,34 @@
                                     <span class="focus-slider-label">Focus Ratio</span>
                                     <span class="focus-slider-value">${state.createTrailData.focusRatio}%</span>
                                 </div>
+                                
+                                <!-- Topic Selection -->
+                                <div class="topic-bubbles" style="margin-bottom: 12px;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                        <div class="topic-bubble" style="background: var(--yt-blue);"
+                                             onclick="showCreateTrailTopicMap('left')">
+                                            ${state.createTrailData.leftTopic ? state.createTrailData.leftTopic.charAt(0) : '◐'}
+                                        </div>
+                                        <span style="font-size: 9px; color: var(--yt-text-secondary); text-align: center;">${state.createTrailData.leftTopic || 'Tap to select'}</span>
+                                    </div>
+                                    <div style="flex: 1; text-align: center; font-size: 11px; color: var(--yt-text-secondary); line-height: 14px;">
+                                        ${state.createTrailData.focusRatio}% ↔ ${100 - state.createTrailData.focusRatio}%
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                        <div class="topic-bubble" style="background: var(--yt-blue)dd;"
+                                             onclick="showCreateTrailTopicMap('right')">
+                                            ${state.createTrailData.rightTopic ? state.createTrailData.rightTopic.charAt(0) : '◑'}
+                                        </div>
+                                        <span style="font-size: 9px; color: var(--yt-text-secondary); text-align: center;">${state.createTrailData.rightTopic || 'Tap to select'}</span>
+                                    </div>
+                                </div>
+                                
                                 <input type="range" class="yt-slider" min="0" max="100" 
                                        value="${state.createTrailData.focusRatio}" 
                                        oninput="updateCreateTrailField('focusRatio', this.value)">
                                 <div class="slider-labels">
-                                    <span class="slider-label-text">Mixed</span>
-                                    <span class="slider-label-text">Focused</span>
+                                    <span class="slider-label-text">${state.createTrailData.leftTopic || 'Left'}</span>
+                                    <span class="slider-label-text">${state.createTrailData.rightTopic || 'Right'}</span>
                                 </div>
                             </div>
                         </div>
@@ -3221,6 +3239,10 @@
                 </div>
                 ${state.showFeatureHelp ? renderFeatureHelpModal() : ''}
                 ${state.showOnboarding ? renderOnboarding() : ''}
+                ${state.showCreateTrailTopicMap ? renderCreateTrailTopicMap() : ''}
+                
+                <!-- Toast Container -->
+                <div class="toast-container" id="toastContainer"></div>
             `;
         }
 
@@ -3564,7 +3586,7 @@
                 video = trailVideos[state.activeTrail].find(v => v.id === videoId);
             }
             if (!video) {
-                video = mockRegularVideos.find(v => v.id === videoId);
+                video = regularFeedVideos.find(v => v.id === videoId);
             }
             
             if (video && !state.parkedVideos.find(v => v.id === videoId)) {
@@ -3614,6 +3636,60 @@
         function updateCreateTrailField(field, value) {
             state.createTrailData[field] = value;
             render();
+        }
+
+        function showCreateTrailTopicMap(side) {
+            // Set up topic map for Create Trail
+            state.showCreateTrailTopicMap = true;
+            state.createTrailTopicMapSide = side;
+            render();
+        }
+
+        function closeCreateTrailTopicMap() {
+            state.showCreateTrailTopicMap = false;
+            render();
+        }
+
+        function selectCreateTrailTopic(topic) {
+            const side = state.createTrailTopicMapSide;
+            if (side === 'left') {
+                state.createTrailData.leftTopic = topic;
+            } else {
+                state.createTrailData.rightTopic = topic;
+            }
+            closeCreateTrailTopicMap();
+        }
+
+        function renderCreateTrailTopicMap() {
+            const side = state.createTrailTopicMapSide;
+            const sideLabel = side === 'left' ? 'Left Topic' : 'Right Topic';
+            const topics = ['React', 'Node.js', 'Python', 'JavaScript', 'Vue', 'Angular', 'TypeScript', 'Express', 'Django', 'Flask'];
+            
+            return `
+                <div class="topic-map-overlay" onclick="closeCreateTrailTopicMap()"></div>
+                <div class="topic-map">
+                    <div class="topic-map-header">
+                        <span class="topic-map-title">${sideLabel}</span>
+                        <button class="topic-map-close" onclick="closeCreateTrailTopicMap()">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <div class="topic-map-content">
+                        <div class="main-topics-section">
+                            <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px; color: var(--yt-text-primary);">Select Main Topic</div>
+                            <div class="main-topics-list">
+                                ${topics.map(topic => `
+                                    <div class="main-topic-item ${(side === 'left' ? state.createTrailData.leftTopic : state.createTrailData.rightTopic) === topic ? 'selected' : ''}" 
+                                         onclick="selectCreateTrailTopic('${topic}')">
+                                        <div class="radio-indicator"></div>
+                                        <span>${topic}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function isCreateTrailValid() {
