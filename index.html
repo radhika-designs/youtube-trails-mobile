@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>YouTube Trails v5.4 - Phase 1 Complete 🚀</title>
+    <title>YouTube Trails v5.4.1 - Phase 1 Fixes 🚀</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
@@ -355,7 +355,7 @@
             left: 16px;
             right: 16px;
             top: 48px;
-            z-index: 260; /* Increased from 101 to ensure tooltips show */
+            z-index: 1000; /* High z-index to stay above all content */
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             overflow: visible; /* Allow tooltips in expanded state */
         }
@@ -1515,7 +1515,7 @@
         /* Toast Notification System */
         .toast-container {
             position: fixed;
-            bottom: 80px; /* Above bottom nav */
+            top: 100px; /* Below header, above content */
             left: 50%;
             transform: translateX(-50%);
             z-index: 10000;
@@ -1523,20 +1523,22 @@
         }
 
         .toast {
-            background: #323232;
+            background: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 24px;
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(-20px);
             transition: all 0.3s ease;
-            max-width: 300px;
+            max-width: 320px;
             text-align: center;
             white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .toast.show {
@@ -1545,11 +1547,13 @@
         }
 
         .toast.success {
-            background: #4CAF50;
+            background: rgba(76, 175, 80, 0.95);
+            border-color: rgba(76, 175, 80, 0.3);
         }
 
         .toast.info {
-            background: #2196F3;
+            background: rgba(33, 150, 243, 0.95);
+            border-color: rgba(33, 150, 243, 0.3);
         }
 
         @keyframes fadeIn {
@@ -3182,17 +3186,6 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Skill Level</label>
-                            <div class="yt-chips-bar" style="padding: 0; border: none;">
-                                ${['Beginner', 'Intermediate', 'Advanced', 'Expert'].map(level => `
-                                    <button class="yt-chip ${state.createTrailData.skillLevel === level ? 'active' : ''}"
-                                            onclick="updateCreateTrailField('skillLevel', '${level}')">
-                                        ${level}
-                                    </button>
-                                `).join('')}
-                            </div>
-                        </div>
 
                         <div class="form-group">
                             <label class="form-label">Content Focus</label>
@@ -3564,12 +3557,24 @@
         function parkVideo(videoId) {
             // Add to parked videos (mock)
             if (!state.parkedVideos) state.parkedVideos = [];
-            const video = mockVideos.find(v => v.id === videoId) || 
-                         mockRegularVideos.find(v => v.id === videoId);
+            
+            // Find video in all possible arrays
+            let video = null;
+            if (state.isTrailFeed && trailVideos[state.activeTrail]) {
+                video = trailVideos[state.activeTrail].find(v => v.id === videoId);
+            }
+            if (!video) {
+                video = mockRegularVideos.find(v => v.id === videoId);
+            }
+            
             if (video && !state.parkedVideos.find(v => v.id === videoId)) {
                 state.parkedVideos.push(video);
+                showToast('📌 Video parked! Check Parked tab', 'success');
+            } else if (state.parkedVideos.find(v => v.id === videoId)) {
+                showToast('📌 Video already parked!', 'info');
+            } else {
+                showToast('❌ Video not found', 'info');
             }
-            showToast('📌 Video parked! Check Parked tab', 'success');
         }
 
         function showAddToTrailModal(videoId) {
