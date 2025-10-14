@@ -1440,6 +1440,120 @@
             opacity: 0.9;
         }
 
+        /* Contextual Onboarding Cards */
+        .contextual-onboarding-card {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .contextual-onboarding-card.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .contextual-card-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 360px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .contextual-onboarding-card.show .contextual-card-content {
+            transform: scale(1);
+        }
+
+        .contextual-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--yt-text-secondary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s ease;
+        }
+
+        .contextual-close-btn:hover {
+            background: var(--yt-hover);
+        }
+
+        .contextual-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-right: 40px; /* Space for close button */
+        }
+
+        .contextual-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .contextual-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--yt-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .contextual-subtitle {
+            font-size: 14px;
+            color: var(--yt-text-secondary);
+        }
+
+        .contextual-body {
+            margin-bottom: 20px;
+        }
+
+        .contextual-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .contextual-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .contextual-btn-primary {
+            background: var(--yt-blue);
+            color: white;
+        }
+
+        .contextual-btn:hover {
+            opacity: 0.9;
+        }
+
         .onboarding-progress {
             display: flex;
             gap: 4px;
@@ -2083,9 +2197,35 @@
             onboardingStep: 0,
             // Feature Help
             showFeatureHelp: null, // stores which feature help to show
+            
+            // Contextual Onboarding - Track first-time feature usage
+            contextualOnboarding: {
+                feedToggle: false,        // Step 1: Feed Toggle
+                contentSlider: false,     // Step 2: Content Focus Slider  
+                trailDetails: false,      // Step 3: Trail Details
+                trailSuggestions: false,  // Step 4: Smart Trail Suggestions
+                parkedVideos: false,      // Step 5: Parked Videos
+                trailPath: false,         // Step 6: Trail Path
+                followTrails: false,      // Step 7: Follow Trails & Community
+                notes: false,             // Step 8: Notes & Summaries
+                createTrail: false        // Step 9: Create Trail
+            }
         };
 
         console.log('YouTube Trails v3.1 - Documentation-Based Help!');
+
+        // Feature to Onboarding Step Mapping
+        const featureToOnboardingStep = {
+            'feedToggle': 1,        // Feed Toggle
+            'contentSlider': 2,     // Content Focus Slider
+            'trailDetails': 3,      // Trail Details
+            'trailSuggestions': 4,  // Smart Trail Suggestions
+            'parkedVideos': 5,      // Parked Videos
+            'trailPath': 6,         // Trail Path
+            'followTrails': 7,      // Follow Trails & Community
+            'notes': 8,             // Notes & Summaries
+            'createTrail': 9        // Create Trail
+        };
 
         // Full Feature Documentation (Original 10 cards - for scrollable help screen)
         const featureDocumentation = [
@@ -3538,6 +3678,10 @@
         function toggleFeed() {
             state.isTrailFeed = !state.isTrailFeed;
             state.focusSliderExpanded = false; // Collapse slider when switching
+            
+            // Show contextual onboarding for feed toggle
+            showContextualOnboarding('feedToggle');
+            
             render();
         }
 
@@ -3556,11 +3700,21 @@
             state.selectedMetaTagsRight = [];
             state.searchQueryLeft = '';
             state.searchQueryRight = '';
+            
+            // Show contextual onboarding for trail details
+            showContextualOnboarding('trailDetails');
+            
             render();
         }
 
         function toggleSlider() {
             state.focusSliderExpanded = !state.focusSliderExpanded;
+            
+            // Show contextual onboarding for content slider when expanding
+            if (state.focusSliderExpanded) {
+                showContextualOnboarding('contentSlider');
+            }
+            
             render();
         }
 
@@ -3682,6 +3836,9 @@
         }
 
         function parkVideo(videoId) {
+            // Show contextual onboarding for parked videos
+            showContextualOnboarding('parkedVideos');
+            
             // Add to parked videos (mock)
             if (!state.parkedVideos) state.parkedVideos = [];
             
@@ -3717,6 +3874,14 @@
 
         function changeTrailDetailTab(tab) {
             state.trailDetailTab = tab;
+            
+            // Show contextual onboarding for specific tabs
+            if (tab === 'path') {
+                showContextualOnboarding('trailPath');
+            } else if (tab === 'notes') {
+                showContextualOnboarding('notes');
+            }
+            
             render();
         }
 
@@ -3724,6 +3889,12 @@
             const trail = mockTrails.find(t => t.id === trailId);
             if (trail) {
                 trail.following = !trail.following;
+                
+                // Show contextual onboarding for follow trails when following
+                if (trail.following) {
+                    showContextualOnboarding('followTrails');
+                }
+                
                 render();
             }
         }
@@ -3806,6 +3977,9 @@
         function createTrail() {
             if (!isCreateTrailValid()) return;
             
+            // Show contextual onboarding for create trail
+            showContextualOnboarding('createTrail');
+            
             alert(`Trail Created!\n\nName: ${state.createTrailData.name}\nTopic: ${state.createTrailData.topic}\nFocus: ${state.createTrailData.focusRatio}%`);
             
             // Reset form
@@ -3876,6 +4050,67 @@
             state.showOnboarding = true;
             state.onboardingStep = 0;
             render();
+        }
+
+        // Contextual Onboarding Functions
+        function showContextualOnboarding(featureKey) {
+            // Check if this is the first time using this feature
+            if (!state.contextualOnboarding[featureKey]) {
+                const stepIndex = featureToOnboardingStep[featureKey];
+                if (stepIndex && featureDocumentation[stepIndex]) {
+                    // Mark as used
+                    state.contextualOnboarding[featureKey] = true;
+                    saveState();
+                    
+                    // Show the contextual onboarding card
+                    showContextualCard(stepIndex);
+                }
+            }
+        }
+
+        function showContextualCard(stepIndex) {
+            const step = featureDocumentation[stepIndex];
+            if (!step) return;
+
+            // Create contextual onboarding card
+            const contextualCard = document.createElement('div');
+            contextualCard.className = 'contextual-onboarding-card';
+            contextualCard.innerHTML = `
+                <div class="contextual-card-content">
+                    <button class="contextual-close-btn" onclick="closeContextualCard()">×</button>
+                    <div class="contextual-header">
+                        <div class="contextual-icon">${step.icon}</div>
+                        <div class="contextual-title">${step.title}</div>
+                        <div class="contextual-subtitle">${step.subtitle}</div>
+                    </div>
+                    <div class="contextual-body">
+                        ${step.content}
+                    </div>
+                    <div class="contextual-actions">
+                        <button class="contextual-btn contextual-btn-primary" onclick="closeContextualCard()">
+                            Got it!
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Add to page
+            document.body.appendChild(contextualCard);
+            
+            // Animate in
+            setTimeout(() => {
+                contextualCard.classList.add('show');
+            }, 10);
+        }
+
+        function closeContextualCard() {
+            const card = document.querySelector('.contextual-onboarding-card');
+            if (card) {
+                card.classList.remove('show');
+                setTimeout(() => {
+                    card.remove();
+                }, 300);
+            }
         }
 
         // Feature Help Functions
