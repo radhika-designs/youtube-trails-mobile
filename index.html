@@ -1905,6 +1905,7 @@
                 focusRatio: 70,
                 skillLevel: 'Intermediate',
                 following: true,
+                created: true,
                 notes: `📝 Trail Overview:\nThis trail takes you through modern web development, from fundamentals to advanced frameworks.\n\n🎯 Learning Path:\n1. Start with HTML/CSS basics to build solid foundations\n2. Master JavaScript ES6+ features\n3. Dive into React for building dynamic UIs\n4. Learn Node.js for backend development\n\n💡 Pro Tips:\n• Build projects after each section\n• Focus on understanding concepts\n• Join the community for support`,
                 color: '#667eea',
                 pathData: [
@@ -1926,6 +1927,7 @@
                 focusRatio: 85,
                 skillLevel: 'Advanced',
                 following: true,
+                created: false,
                 notes: `📝 Trail Overview:\nJourney through quantum physics, from classical foundations to cutting-edge applications.\n\n🎯 Prerequisites:\n• Basic classical physics understanding\n• Comfort with mathematical notation\n\n🔬 What You'll Learn:\n- Wave-particle duality\n- Quantum entanglement\n- Superposition principles\n- Real-world applications`,
                 color: '#2BA640',
                 pathData: [
@@ -1946,6 +1948,7 @@
                 focusRatio: 60,
                 skillLevel: 'Beginner',
                 following: true,
+                created: true,
                 notes: `📝 Trail Overview:\nExplore the rich culinary traditions of the Mediterranean region.\n\n🍳 What You'll Master:\n• Italian pasta-making techniques\n• Greek salad and mezze\n• Spanish paella and tapas\n• Healthy Mediterranean diet\n\n🛒 Equipment Needed:\n- Basic kitchen tools\n- Good quality olive oil\n- Fresh ingredients`,
                 color: '#FF6B6B',
                 pathData: [
@@ -1954,6 +1957,27 @@
                     { video: 'Fresh Pasta from Scratch', duration: '15:20', completed: true, date: '2025-09-22' },
                     { video: 'Spanish Paella Recipe', duration: '16:45', completed: false, date: null },
                     { video: 'Turkish Baklava', duration: '19:30', completed: false, date: null },
+                ],
+            },
+            {
+                id: '4',
+                name: 'Machine Learning Fundamentals',
+                creator: 'DataSciencePro',
+                description: 'Learn the basics of machine learning from scratch',
+                followerCount: 2156,
+                videoCount: 18,
+                tags: ['AI', 'Python', 'Data Science'],
+                focusRatio: 80,
+                skillLevel: 'Intermediate',
+                following: true,
+                created: false,
+                notes: `📝 Trail Overview:\nA comprehensive introduction to machine learning concepts and practical applications.\n\n🎯 What You'll Learn:\n• Supervised and unsupervised learning\n• Neural networks basics\n• Data preprocessing\n• Model evaluation\n\n💡 Prerequisites:\n• Basic Python knowledge\n• Understanding of statistics`,
+                color: '#9C27B0',
+                pathData: [
+                    { video: 'Introduction to ML', duration: '32:15', completed: true, date: '2025-09-05' },
+                    { video: 'Linear Regression', duration: '28:45', completed: true, date: '2025-09-12' },
+                    { video: 'Classification Algorithms', duration: '35:20', completed: false, date: null },
+                    { video: 'Neural Networks Basics', duration: '42:10', completed: false, date: null },
                 ],
             },
         ];
@@ -3062,7 +3086,7 @@
         function renderTrailsList() {
             const trails = state.myTrailsTab === 'following' 
                 ? mockTrails.filter(t => t.following)
-                : mockTrails;
+                : mockTrails.filter(t => t.created);
 
             if (trails.length === 0) {
                 return `
