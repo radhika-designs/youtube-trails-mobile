@@ -10,14 +10,15 @@ A modern web-based prototype for YouTube Trails, an innovative content discovery
 - **Topic Selection**: Choose main topics and meta tags for personalized content curation
 - **Trail Management**: Create, follow, and organize video trails
 - **Parked Videos**: Save videos for later viewing
-- **Interactive Onboarding**: Step-by-step tutorial and complete feature guide
+- **Smart Contextual Onboarding**: Help cards appear when you first use each feature
+- **Complete Feature Guide**: Comprehensive documentation and tutorials
 
 ### UI/UX Highlights
 - **YouTube-Inspired Design**: Familiar interface with Material Design principles
 - **Responsive Layout**: Mobile-first design with 428px viewport
 - **Smart Tooltips**: Edge-detection tooltips that stay within bounds
 - **Color Psychology**: Soft pastel colors for regular feed, vibrant colors for trail feed
-- **Smooth Animations**: Collapsible slider, scroll-based header visibility
+- **Smooth Animations**: Collapsible slider, scroll-based header visibility, graceful onboarding cards
 - **Accessibility**: WCAG-compliant contrast ratios and touch targets
 
 ## 🚀 Getting Started
@@ -137,6 +138,21 @@ This is a prototype project. Feel free to fork and experiment!
 ## 📄 License
 
 This project is for educational and demonstration purposes.
+
+## 🆕 Recent Updates (v5.5)
+
+### Major Onboarding System Overhaul
+- **Smart Contextual Help**: Onboarding cards now appear when you first use each feature, not all at once
+- **Visual Polish**: Enhanced empty states, trail cards with creator details, and consistent Material Icons
+- **Smooth Animations**: Graceful card appearances with fade-in and slide-in effects
+- **Better Navigation**: Breadcrumb navigation and improved profile organization
+- **Bug Fixes**: Fixed trail card clickability and content separation between Following/Created tabs
+
+### Key Improvements
+- ✅ **Reduced cognitive load** - Help appears exactly when needed
+- ✅ **Professional feel** - Smooth animations and consistent visual language  
+- ✅ **Better engagement** - Non-intrusive contextual guidance
+- ✅ **Enhanced content** - Rich trail cards with detailed information
 
 ## 👨‍💻 Author
 
