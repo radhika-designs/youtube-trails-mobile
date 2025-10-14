@@ -1436,6 +1436,21 @@
             align-items: center;
             justify-content: center;
             border-radius: 40px; /* Match phone container */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            animation: fadeInOverlay 0.4s ease forwards;
+        }
+
+        @keyframes fadeInOverlay {
+            from {
+                opacity: 0;
+                visibility: hidden;
+            }
+            to {
+                opacity: 1;
+                visibility: visible;
+            }
         }
 
         .onboarding-card {
@@ -1447,6 +1462,20 @@
             max-height: 80vh;
             overflow-y: auto;
             box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+            animation: slideInCard 0.5s ease 0.1s forwards;
+        }
+
+        @keyframes slideInCard {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
         }
 
         .onboarding-header {
@@ -1564,7 +1593,19 @@
             justify-content: center;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            animation: fadeInContextual 0.4s ease forwards;
+        }
+
+        @keyframes fadeInContextual {
+            from {
+                opacity: 0;
+                visibility: hidden;
+            }
+            to {
+                opacity: 1;
+                visibility: visible;
+            }
         }
 
         .contextual-onboarding-card.show {
@@ -1582,8 +1623,32 @@
             overflow-y: auto;
             position: relative;
             box-shadow: 0 12px 48px rgba(0,0,0,0.3);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            animation: slideInContextualCard 0.5s ease 0.1s forwards;
+        }
+
+        @keyframes slideInContextualCard {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOutContextual {
+            from {
+                opacity: 1;
+                visibility: visible;
+            }
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
         }
 
         .contextual-onboarding-card.show .contextual-card-content {
@@ -4310,17 +4375,13 @@
 
             // Add to page
             document.body.appendChild(contextualCard);
-            
-            // Animate in
-            setTimeout(() => {
-                contextualCard.classList.add('show');
-            }, 10);
         }
 
         function closeContextualCard() {
             const card = document.querySelector('.contextual-onboarding-card');
             if (card) {
-                card.classList.remove('show');
+                // Add fade out animation
+                card.style.animation = 'fadeOutContextual 0.3s ease forwards';
                 setTimeout(() => {
                     card.remove();
                 }, 300);
