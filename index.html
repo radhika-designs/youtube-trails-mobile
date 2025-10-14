@@ -897,14 +897,81 @@
         .yt-trail-thumbnail {
             width: 100%;
             height: 140px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trail-thumbnail-content {
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            text-align: center;
-            color: white;
+            position: relative;
+        }
+
+        .trail-progress-overlay {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+
+        .progress-circle {
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .trail-header {
+            margin-bottom: 12px;
+        }
+
+        .trail-creator-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .creator-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .creator-details {
+            flex: 1;
+        }
+
+        .creator-verified {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--yt-blue);
+            margin-top: 2px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .yt-tag-more {
+            background: var(--yt-hover);
+            color: var(--yt-text-secondary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
             font-weight: 500;
-            font-size: 16px;
         }
 
         .yt-trail-info {
@@ -1310,6 +1377,26 @@
         .empty-state-text {
             font-size: 14px;
             color: var(--yt-text-secondary);
+            line-height: 20px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-action {
+            background: var(--yt-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: opacity 0.2s ease;
+        }
+
+        .empty-state-action:hover {
+            opacity: 0.9;
         }
 
         /* Fixed Submit Button */
@@ -1371,6 +1458,7 @@
             font-size: 64px;
             margin-bottom: 16px;
             display: block;
+            color: var(--yt-blue);
         }
 
         .onboarding-title {
@@ -1533,6 +1621,7 @@
         .contextual-icon {
             font-size: 48px;
             margin-bottom: 12px;
+            color: var(--yt-blue);
         }
 
         .contextual-title {
@@ -2252,7 +2341,7 @@
         // Full Feature Documentation (Original 10 cards - for scrollable help screen)
         const featureDocumentation = [
             {
-                icon: '🎬',
+                icon: 'play_circle',
                 title: 'Welcome to YouTube Trails!',
                 subtitle: 'Organize your viewing into focused learning journeys',
                 content: `
@@ -2264,17 +2353,17 @@
                         <div class="feature-text">Create topic-specific content streams</div>
                     </div>
                     <div class="onboarding-feature">
-                        <div class="feature-label">🧭 ORGANIZED DISCOVERY</div>
+                        <div class="feature-label">ORGANIZED DISCOVERY</div>
                         <div class="feature-text">Track your progress through topics</div>
                     </div>
                     <div class="onboarding-feature">
-                        <div class="feature-label">👥 COMMUNITY CURATION</div>
+                        <div class="feature-label">COMMUNITY CURATION</div>
                         <div class="feature-text">Follow trails created by others</div>
                     </div>
                 `
             },
             {
-                icon: '🌐',
+                icon: 'swap_horiz',
                 title: 'Feed Toggle',
                 subtitle: 'Switch between Regular & Trail Feed',
                 content: `
@@ -2295,7 +2384,7 @@
                 `
             },
             {
-                icon: '🎚️',
+                icon: 'tune',
                 title: 'Content Focus Slider',
                 subtitle: 'Fine-tune your content mix',
                 content: `
@@ -2316,7 +2405,7 @@
                 `
             },
             {
-                icon: '🗺️',
+                icon: 'map',
                 title: 'Trail Details',
                 subtitle: 'Your topic-based learning hub',
                 content: `
@@ -2334,7 +2423,7 @@
                 `
             },
             {
-                icon: '💡',
+                icon: 'lightbulb',
                 title: 'Smart Trail Suggestions',
                 subtitle: 'Turn patterns into trails',
                 content: `
@@ -2352,7 +2441,7 @@
                 `
             },
             {
-                icon: '📑',
+                icon: 'bookmark',
                 title: 'Parked Videos',
                 subtitle: 'Intentional "Watch Later"',
                 content: `
@@ -2370,7 +2459,7 @@
                 `
             },
             {
-                icon: '🧭',
+                icon: 'timeline',
                 title: 'Trail Path',
                 subtitle: 'Your learning journey visualized',
                 content: `
@@ -2388,7 +2477,7 @@
                 `
             },
             {
-                icon: '👥',
+                icon: 'group',
                 title: 'Follow Trails & Community',
                 subtitle: 'Topic-centric, not just creator-centric',
                 content: `
@@ -2406,7 +2495,7 @@
                 `
             },
             {
-                icon: '📝',
+                icon: 'note',
                 title: 'Notes & Summaries',
                 subtitle: 'Make YouTube interactive',
                 content: `
@@ -2427,7 +2516,7 @@
                 `
             },
             {
-                icon: '🎉',
+                icon: 'check_circle',
                 title: 'You\'re All Set!',
                 subtitle: 'Start exploring',
                 content: `
@@ -2703,7 +2792,7 @@
                         
                         <!-- Header -->
                         <div class="onboarding-header">
-                            <span class="onboarding-icon">${currentStep.icon}</span>
+                            <span class="material-icons onboarding-icon">${currentStep.icon}</span>
                             <h2 class="onboarding-title">${currentStep.title}</h2>
                             <p class="onboarding-subtitle">${currentStep.subtitle}</p>
                         </div>
@@ -2978,13 +3067,26 @@
             if (trails.length === 0) {
                 return `
                     <div class="empty-state">
-                        <div class="empty-state-icon">📚</div>
-                        <div class="empty-state-title">No trails yet</div>
+                        <div class="empty-state-icon">
+                            <span class="material-icons" style="font-size: 64px; color: var(--yt-text-secondary);">explore</span>
+                        </div>
+                        <div class="empty-state-title">${state.myTrailsTab === 'following' ? 'No trails followed yet' : 'No trails created yet'}</div>
                         <div class="empty-state-text">
                             ${state.myTrailsTab === 'following' 
-                                ? 'Start following trails to see them here' 
-                                : 'Create your first trail to get started'}
+                                ? 'Discover amazing learning paths created by the community. Follow trails that interest you to see them here!' 
+                                : 'Ready to share your knowledge? Create your first trail and help others learn something new.'}
                         </div>
+                        ${state.myTrailsTab === 'following' ? `
+                            <button class="empty-state-action" onclick="changeScreen('home')">
+                                <span class="material-icons" style="font-size: 18px; margin-right: 8px;">search</span>
+                                Explore Trails
+                            </button>
+                        ` : `
+                            <button class="empty-state-action" onclick="changeScreen('createtrail')">
+                                <span class="material-icons" style="font-size: 18px; margin-right: 8px;">add</span>
+                                Create Your First Trail
+                            </button>
+                        `}
                     </div>
                 `;
             }
@@ -2999,17 +3101,49 @@
                 
                 return `
                 <div class="yt-trail-card" onclick="viewTrail('${trail.id}')">
-                    <div class="yt-trail-thumbnail" style="background: ${gradient};">${trail.name}</div>
+                    <div class="yt-trail-thumbnail" style="background: ${gradient};">
+                        <div class="trail-thumbnail-content">
+                            <span class="material-icons" style="font-size: 48px; color: white; opacity: 0.9;">${trail.icon || 'explore'}</span>
+                            <div class="trail-progress-overlay">
+                                <div class="progress-circle">
+                                    <span class="material-icons" style="font-size: 16px; color: white;">play_arrow</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="yt-trail-info">
-                        <h3 class="yt-trail-title">${trail.name}</h3>
-                        <p class="yt-trail-creator">by ${trail.creator}</p>
+                        <div class="trail-header">
+                            <h3 class="yt-trail-title">${trail.name}</h3>
+                            <div class="trail-creator-info">
+                                <div class="creator-avatar" style="background: ${avatarGradient};"></div>
+                                <div class="creator-details">
+                                    <p class="yt-trail-creator">by ${trail.creator}</p>
+                                    <span class="creator-verified">
+                                        <span class="material-icons" style="font-size: 12px; color: var(--yt-blue);">verified</span>
+                                        Verified Creator
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="yt-trail-stats">
-                            <span>${trail.videoCount} videos</span>
+                            <div class="stat-item">
+                                <span class="material-icons" style="font-size: 16px; color: var(--yt-text-secondary);">play_circle_outline</span>
+                                <span>${trail.videoCount} videos</span>
+                            </div>
                             <div class="yt-trail-dot"></div>
-                            <span>${trail.followerCount.toLocaleString()} followers</span>
+                            <div class="stat-item">
+                                <span class="material-icons" style="font-size: 16px; color: var(--yt-text-secondary);">people</span>
+                                <span>${trail.followerCount.toLocaleString()}</span>
+                            </div>
+                            <div class="yt-trail-dot"></div>
+                            <div class="stat-item">
+                                <span class="material-icons" style="font-size: 16px; color: var(--yt-text-secondary);">schedule</span>
+                                <span>${trail.estimatedTime || '2h 30m'}</span>
+                            </div>
                         </div>
                         <div class="yt-trail-tags">
-                            ${trail.tags.map(tag => `<span class="yt-tag">${tag}</span>`).join('')}
+                            ${trail.tags.slice(0, 3).map(tag => `<span class="yt-tag">${tag}</span>`).join('')}
+                            ${trail.tags.length > 3 ? `<span class="yt-tag-more">+${trail.tags.length - 3}</span>` : ''}
                         </div>
                         <div class="yt-trail-footer">
                             <span class="yt-focus-badge" style="background: ${trail.color}; font-size: 10px; padding: 4px 6px;">
@@ -3176,9 +3310,11 @@
                 if (!trail.pathData || trail.pathData.length === 0) {
                     return `
                         <div class="empty-state">
-                            <div class="empty-state-icon">🗺️</div>
-                            <div class="empty-state-title">No path data yet</div>
-                            <div class="empty-state-text">Trail path will show your learning progression</div>
+                            <div class="empty-state-icon">
+                                <span class="material-icons" style="font-size: 64px; color: var(--yt-text-secondary);">timeline</span>
+                            </div>
+                            <div class="empty-state-title">Your learning journey starts here</div>
+                            <div class="empty-state-text">As you watch videos in this trail, your progress will be tracked here. See how far you've come and what's next in your learning path!</div>
                         </div>
                     `;
                 }
@@ -3314,9 +3450,15 @@
             if (videos.length === 0) {
                 return `
                     <div class="empty-state">
-                        <div class="empty-state-icon">📑</div>
-                        <div class="empty-state-title">No videos yet</div>
-                        <div class="empty-state-text">Park videos from your feed to watch them later</div>
+                        <div class="empty-state-icon">
+                            <span class="material-icons" style="font-size: 64px; color: var(--yt-text-secondary);">bookmark_border</span>
+                        </div>
+                        <div class="empty-state-title">Your watchlist is empty</div>
+                        <div class="empty-state-text">Found something interesting? Park videos from your feed to create a personalized watchlist. No more losing track of great content!</div>
+                        <button class="empty-state-action" onclick="changeScreen('home')">
+                            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">home</span>
+                            Browse Videos
+                        </button>
                     </div>
                 `;
             }
@@ -3597,6 +3739,15 @@
                 </div>
 
                 <div class="yt-content">
+                    <!-- Breadcrumb Navigation -->
+                    <div style="padding: 12px 16px; background: #F8F9FA; border-bottom: 1px solid var(--yt-divider);">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--yt-text-secondary);">
+                            <span style="cursor: pointer; color: var(--yt-blue);" onclick="changeScreen('profile')">Profile</span>
+                            <span class="material-icons" style="font-size: 16px; color: var(--yt-text-secondary);">chevron_right</span>
+                            <span style="color: var(--yt-text-primary); font-weight: 500;">Complete Guide</span>
+                        </div>
+                    </div>
+
                     <div style="padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                         <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">📖 Complete Feature Guide</div>
                         <div style="font-size: 13px; line-height: 20px; opacity: 0.95;">
@@ -3608,7 +3759,7 @@
                     ${featureDocumentation.map((doc, index) => `
                         <div style="padding: 20px 16px; border-bottom: 1px solid var(--yt-divider); background: ${index % 2 === 0 ? 'white' : '#FAFAFA'};">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                                <span style="font-size: 36px;">${doc.icon}</span>
+                                <span class="material-icons" style="font-size: 36px; color: var(--yt-blue);">${doc.icon}</span>
                                 <div>
                                     <h3 style="font-size: 18px; font-weight: 500; margin-bottom: 2px;">${doc.title}</h3>
                                     <p style="font-size: 12px; color: var(--yt-text-secondary);">${doc.subtitle}</p>
@@ -4096,7 +4247,9 @@
                 <div class="contextual-card-content">
                     <button class="contextual-close-btn" onclick="closeContextualCard()">×</button>
                     <div class="contextual-header">
-                        <div class="contextual-icon">${step.icon}</div>
+                        <div class="contextual-icon">
+                            <span class="material-icons">${step.icon}</span>
+                        </div>
                         <div class="contextual-title">${step.title}</div>
                         <div class="contextual-subtitle">${step.subtitle}</div>
                     </div>
