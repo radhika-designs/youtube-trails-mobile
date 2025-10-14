@@ -1440,6 +1440,28 @@
             opacity: 0.9;
         }
 
+        .onboarding-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--yt-text-secondary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s ease;
+        }
+
+        .onboarding-close-btn:hover {
+            background: var(--yt-hover);
+        }
+
         /* Contextual Onboarding Cards */
         .contextual-onboarding-card {
             position: fixed;
@@ -2671,21 +2693,14 @@
         }
 
         function renderOnboarding() {
-            const currentStep = featureDocumentation[state.onboardingStep];
-            const totalSteps = featureDocumentation.length;
-            const isFirstStep = state.onboardingStep === 0;
-            const isLastStep = state.onboardingStep === totalSteps - 1;
+            // Only show the first step (Welcome)
+            const currentStep = featureDocumentation[0];
 
             return `
-                <div class="onboarding-overlay">
-                    <div class="onboarding-card">
-                        <!-- Progress Dots -->
-                        <div class="onboarding-progress">
-                            ${featureDocumentation.map((_, index) => `
-                                <div class="progress-dot ${index === state.onboardingStep ? 'active' : ''}"></div>
-                            `).join('')}
-                        </div>
-
+                <div class="onboarding-overlay" onclick="closeOnboardingOnOutsideClick(event)">
+                    <div class="onboarding-card" onclick="event.stopPropagation()">
+                        <button class="onboarding-close-btn" onclick="skipOnboarding()">×</button>
+                        
                         <!-- Header -->
                         <div class="onboarding-header">
                             <span class="onboarding-icon">${currentStep.icon}</span>
@@ -2700,25 +2715,15 @@
 
                         <!-- Navigation -->
                         <div class="onboarding-actions">
-                            ${!isFirstStep ? `
-                                <button class="onboarding-btn onboarding-btn-secondary" onclick="onboardingBack()">
-                                    Back
-                                </button>
-                            ` : `
-                                <button class="onboarding-btn onboarding-btn-secondary" onclick="skipOnboarding()">
-                                    Skip
-                                </button>
-                            `}
-                            <button class="onboarding-btn onboarding-btn-primary" onclick="${isLastStep ? 'finishOnboarding()' : 'onboardingNext()'}">
-                                ${isLastStep ? 'Get Started' : 'Next'}
+                            <button class="onboarding-btn onboarding-btn-primary" onclick="finishOnboarding()">
+                                Get Started!
                             </button>
                         </div>
 
-                        <!-- Step Counter -->
+                        <!-- Help Link -->
                         <div style="text-align: center; margin-top: 16px; font-size: 12px; color: var(--yt-text-secondary);">
-                            Step ${state.onboardingStep + 1} of ${totalSteps} • 
                             <span style="color: var(--yt-blue); cursor: pointer;" onclick="skipOnboarding(); changeScreen('featureguide'); render();">
-                                View as Scrollable Guide
+                                View Complete Guide
                             </span>
                         </div>
                     </div>
@@ -3531,7 +3536,7 @@
                         </div>
 
                         <div style="padding: 12px 16px; background: #E8F0FE; border-bottom: 1px solid var(--yt-divider);">
-                            <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--yt-text-primary);">📖 Help & Learning</div>
+                            <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--yt-text-primary);">🎓 Onboarding</div>
                             <div style="font-size: 11px; color: var(--yt-text-secondary); line-height: 16px;">
                                 Choose how you want to learn about features
                             </div>
@@ -3539,8 +3544,8 @@
 
                         <div class="settings-item" onclick="restartOnboarding()">
                             <div>
-                                <div class="settings-label">Step-by-Step Tutorial</div>
-                                <div style="font-size: 11px; color: var(--yt-text-secondary);">10 steps • Interactive carousel</div>
+                                <div class="settings-label">Quick Introduction</div>
+                                <div style="font-size: 11px; color: var(--yt-text-secondary);">Welcome card • Get started fast</div>
                             </div>
                             <span class="material-icons" style="font-size: 20px; color: var(--yt-text-secondary);">
                                 play_circle_outline
@@ -3701,9 +3706,6 @@
             state.searchQueryLeft = '';
             state.searchQueryRight = '';
             
-            // Show contextual onboarding for trail details
-            showContextualOnboarding('trailDetails');
-            
             render();
         }
 
@@ -3807,6 +3809,11 @@
         function toggleSlider() {
             state.focusSliderExpanded = !state.focusSliderExpanded;
             
+            // Show contextual onboarding for content slider when expanding
+            if (state.focusSliderExpanded) {
+                showContextualOnboarding('contentSlider');
+            }
+            
             // Dynamically manage z-index based on slider state
             setTimeout(() => {
                 const chipsBar = document.querySelector('.yt-chips-bar');
@@ -3869,6 +3876,10 @@
         function viewTrail(trailId) {
             state.selectedTrail = trailId;
             state.currentScreen = 'traildetail';
+            
+            // Show contextual onboarding for trail details when clicking from My Trails
+            showContextualOnboarding('trailDetails');
+            
             render();
         }
 
@@ -4037,6 +4048,12 @@
         function skipOnboarding() {
             state.showOnboarding = false;
             render();
+        }
+
+        function closeOnboardingOnOutsideClick(event) {
+            if (event.target === event.currentTarget) {
+                skipOnboarding();
+            }
         }
 
         function finishOnboarding() {
