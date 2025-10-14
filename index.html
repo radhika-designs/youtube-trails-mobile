@@ -3098,9 +3098,10 @@
                 const rightPercent = 100 - leftPercent;
                 const leftTopic = topicMap ? topicMap.leftMain : 'Left';
                 const rightTopic = topicMap ? topicMap.rightMain : 'Right';
+                const avatarGradient = `linear-gradient(135deg, ${trail.color} 0%, ${trail.color}cc 100%)`;
                 
                 return `
-                <div class="yt-trail-card" onclick="viewTrail('${trail.id}')">
+                <div class="yt-trail-card" onclick="event.stopPropagation(); viewTrail('${trail.id}')">
                     <div class="yt-trail-thumbnail" style="background: ${gradient};">
                         <div class="trail-thumbnail-content">
                             <span class="material-icons" style="font-size: 48px; color: white; opacity: 0.9;">${trail.icon || 'explore'}</span>
@@ -3823,6 +3824,7 @@
         }
 
         function toggleFeed() {
+            console.log('toggleFeed called, current state:', state.isTrailFeed);
             state.isTrailFeed = !state.isTrailFeed;
             state.focusSliderExpanded = false; // Collapse slider when switching
             
@@ -4016,6 +4018,7 @@
         }
 
         function viewTrail(trailId) {
+            console.log('viewTrail called with:', trailId);
             state.selectedTrail = trailId;
             state.currentScreen = 'traildetail';
             
