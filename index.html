@@ -2698,6 +2698,9 @@
                 'createtrail': renderCreateTrailScreen,
                 'profile': renderProfileScreen,
                 'featureguide': renderFeatureGuideScreen,
+                'shorts': renderShortsScreen,
+                'subscriptions': renderSubscriptionsScreen,
+                'library': renderLibraryScreen,
             };
 
             return screens[state.currentScreen]();
@@ -3894,19 +3897,99 @@
             `;
         }
 
+        // YouTube Navigation Screens
+        function renderShortsScreen() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-header-title">Shorts</div>
+                </div>
+                <div class="yt-content">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <span class="material-icons" style="font-size: 64px; color: var(--yt-text-secondary);">video_library</span>
+                        </div>
+                        <div class="empty-state-title">Shorts Coming Soon</div>
+                        <div class="empty-state-text">Quick, engaging videos will be available here in a future update.</div>
+                        <button class="empty-state-action" onclick="changeScreen('home')">
+                            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">home</span>
+                            Go to Home
+                        </button>
+                    </div>
+                </div>
+                ${renderBottomNav()}
+            `;
+        }
+
+        function renderSubscriptionsScreen() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-header-title">Subscriptions</div>
+                </div>
+                <div class="yt-content">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <span class="material-icons" style="font-size: 64px; color: var(--yt-text-secondary);">subscriptions</span>
+                        </div>
+                        <div class="empty-state-title">No Subscriptions Yet</div>
+                        <div class="empty-state-text">Subscribe to channels to see their latest videos here.</div>
+                        <button class="empty-state-action" onclick="changeScreen('home')">
+                            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">home</span>
+                            Go to Home
+                        </button>
+                    </div>
+                </div>
+                ${renderBottomNav()}
+            `;
+        }
+
+        function renderLibraryScreen() {
+            return `
+                <div class="yt-header">
+                    <div class="yt-header-title">Library</div>
+                </div>
+                <div class="yt-content">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <span class="material-icons" style="font-size: 64px; color: var(--yt-text-secondary);">video_library</span>
+                        </div>
+                        <div class="empty-state-title">Your Library</div>
+                        <div class="empty-state-text">Your saved videos, playlists, and downloads will appear here.</div>
+                        <button class="empty-state-action" onclick="changeScreen('home')">
+                            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">home</span>
+                            Go to Home
+                        </button>
+                    </div>
+                </div>
+                ${renderBottomNav()}
+            `;
+        }
+
         // Bottom Navigation
         function renderBottomNav() {
             // Calculate badge counts
             const parkedCount = state.parkedVideos ? state.parkedVideos.length : 0;
             const trailsCount = mockTrails.filter(t => t.following).length;
             
-            const navItems = [
+            // YouTube's original bottom navigation for Regular Feed
+            const youtubeNavItems = [
+                { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: '🏠 Home Feed - Browse videos' },
+                { id: 'shorts', screen: 'shorts', icon: 'video_library', label: 'Shorts', tooltip: '📱 Shorts - Quick videos' },
+                { id: 'create', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: '➕ Create content' },
+                { id: 'subscriptions', screen: 'subscriptions', icon: 'subscriptions', label: 'Subscriptions', tooltip: '📺 Subscriptions - Following channels' },
+                { id: 'library', screen: 'library', icon: 'video_library', label: 'Library', tooltip: '📚 Library - Your content' },
+            ];
+            
+            // Current Trail navigation for Trail Feed
+            const trailNavItems = [
                 { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: '🏠 Home Feed - Browse videos' },
                 { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails', tooltip: '🗺️ My Trails - Following & Created', badge: trailsCount > 0 ? trailsCount : null },
                 { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: '➕ Create new Trail' },
                 { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked', tooltip: '📑 Parked Videos - Watch Later', badge: parkedCount > 0 ? parkedCount : null },
                 { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: '👤 Profile & Settings' },
             ];
+            
+            // Choose navigation based on current feed
+            const navItems = state.currentFeed === 'regular' ? youtubeNavItems : trailNavItems;
 
             return `
                 <div class="yt-bottom-nav">
