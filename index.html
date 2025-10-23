@@ -3989,7 +3989,7 @@
             ];
             
             // Choose navigation based on current feed
-            const navItems = state.currentFeed === 'regular' ? youtubeNavItems : trailNavItems;
+            const navItems = state.isTrailFeed ? trailNavItems : youtubeNavItems;
 
             return `
                 <div class="yt-bottom-nav">
