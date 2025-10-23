@@ -241,6 +241,60 @@ contextualOnboarding: {
 
 ---
 
+### **7. YouTube Navigation System**
+**Problem:** Users needed different navigation experiences for Regular Feed vs Trail Feed.
+
+**Solution:** Implemented conditional bottom navigation that switches based on the active feed type.
+
+#### **Navigation Types:**
+
+**Regular Feed (YouTube Style):**
+- ✅ **Home** - Main feed browsing
+- ✅ **Shorts** - Quick videos (placeholder screen)
+- ✅ **Create** - Create content (redirects to Create Trail)
+- ✅ **Subscriptions** - Following channels (placeholder screen)
+- ✅ **Profile** - User settings and preferences
+
+**Trail Feed (Trail Style):**
+- ✅ **Home** - Main feed browsing
+- ✅ **Trails** - My Trails (Following & Created)
+- ✅ **Create** - Create new Trail
+- ✅ **Parked** - Watch Later videos
+- ✅ **Profile** - User settings and preferences
+
+#### **Technical Implementation:**
+```javascript
+// Conditional navigation based on feed type
+const navItems = state.isTrailFeed ? trailNavItems : youtubeNavItems;
+
+// YouTube navigation items
+const youtubeNavItems = [
+    { id: 'home', screen: 'home', icon: 'home', label: 'Home' },
+    { id: 'shorts', screen: 'shorts', icon: 'video_library', label: 'Shorts' },
+    { id: 'create', screen: 'createtrail', icon: 'add_circle_outline', label: '' },
+    { id: 'subscriptions', screen: 'subscriptions', icon: 'subscriptions', label: 'Subscriptions' },
+    { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You' }
+];
+
+// Trail navigation items
+const trailNavItems = [
+    { id: 'home', screen: 'home', icon: 'home', label: 'Home' },
+    { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails' },
+    { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: '' },
+    { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked' },
+    { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You' }
+];
+```
+
+#### **Key Features:**
+- ✅ **Seamless switching** - Navigation changes automatically when toggling feeds
+- ✅ **Common Profile item** - Both navigation types include Profile for consistency
+- ✅ **Placeholder screens** - New screens for Shorts, Subscriptions with engaging empty states
+- ✅ **Maintained functionality** - All existing Trail features preserved
+- ✅ **YouTube authenticity** - Regular Feed navigation matches YouTube's current design
+
+---
+
 ## 📊 **Impact & Results**
 
 ### **User Experience Improvements:**
