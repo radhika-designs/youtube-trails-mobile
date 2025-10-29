@@ -1597,6 +1597,62 @@
             animation: fadeInContextual 0.4s ease forwards;
         }
 
+        /* Motion Design Utilities */
+        @keyframes micro-scale-in {
+            0% { transform: scale(0.96); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes micro-bounce {
+            0% { transform: translateY(0); }
+            40% { transform: translateY(-2px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(33,150,243,0.25); }
+            100% { box-shadow: 0 0 0 12px rgba(33,150,243,0); }
+        }
+
+        /* Celebration particles */
+        .celebration-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 11000;
+        }
+
+        .celebration-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9);
+            animation: confetti-pop 700ms ease-out forwards;
+        }
+
+        @keyframes confetti-pop {
+            0% { opacity: 0; transform: translate(var(--x, 0), var(--y, 0)) scale(0.9); }
+            10% { opacity: 1; }
+            100% { opacity: 0; transform: translate(var(--tx, 0), var(--ty, -40px)) scale(1); }
+        }
+
+        /* Nav icon micro-activation */
+        .yt-nav-item.active .material-icons {
+            animation: micro-bounce 220ms ease-out;
+        }
+
+        /* Press feedback for interactive elements */
+        .yt-nav-item:active, .yt-icon-btn:active, .contextual-btn:active, .empty-state-action:active {
+            transform: scale(0.98);
+        }
+
+        /* Respect Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+        }
+
         @keyframes fadeInContextual {
             from {
                 opacity: 0;
@@ -2435,6 +2491,12 @@
                 followTrails: false,      // Step 7: Follow Trails & Community
                 notes: false,             // Step 8: Notes & Summaries
                 createTrail: false        // Step 9: Create Trail
+            },
+            // Achievement flags (one-time celebrations)
+            achievements: {
+                firstFollow: false,
+                firstPark: false,
+                firstTrailCreated: false
             }
         };
 
@@ -4203,6 +4265,13 @@
             if (video && !state.parkedVideos.find(v => v.id === videoId)) {
                 state.parkedVideos.push(video);
                 showToast('📌 Video parked! Check Parked tab', 'success');
+                if (!state.achievements.firstPark) {
+                    state.achievements.firstPark = true;
+                    saveState();
+                    celebrate('park');
+                } else {
+                    saveState();
+                }
             } else if (state.parkedVideos.find(v => v.id === videoId)) {
                 showToast('📌 Video already parked!', 'info');
             } else {
@@ -4213,6 +4282,36 @@
         function showAddToTrailModal(videoId) {
             const trailNames = mockTrails.map(t => t.name).join('\n');
             showToast('✅ Added to Web Dev trail', 'success');
+        }
+
+        // Celebration utility: subtle, fast, and respectful of reduced motion
+        function celebrate(kind = 'milestone') {
+            try {
+                const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (reduce) return;
+                const layer = document.createElement('div');
+                layer.className = 'celebration-layer';
+                document.body.appendChild(layer);
+                const colors = ['#1E88E5', '#43A047', '#FB8C00', '#8E24AA', '#F4511E'];
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                const count = 14;
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement('span');
+                    p.className = 'celebration-particle';
+                    const angle = (Math.PI * 2) * (i / count) + (Math.random() * 0.6 - 0.3);
+                    const radius = 60 + Math.random() * 40;
+                    const tx = Math.cos(angle) * radius;
+                    const ty = Math.sin(angle) * radius * -0.6;
+                    p.style.left = centerX + 'px';
+                    p.style.top = centerY + 'px';
+                    p.style.setProperty('--tx', tx + 'px');
+                    p.style.setProperty('--ty', ty + 'px');
+                    p.style.background = colors[i % colors.length];
+                    layer.appendChild(p);
+                }
+                setTimeout(() => layer.remove(), 800);
+            } catch (e) { /* no-op */ }
         }
 
         function viewTrail(trailId) {
@@ -4247,6 +4346,13 @@
                 // Show contextual onboarding for follow trails when following
                 if (trail.following) {
                     showContextualOnboarding('followTrails');
+                    if (!state.achievements.firstFollow) {
+                        state.achievements.firstFollow = true;
+                        saveState();
+                        celebrate('follow');
+                    } else {
+                        saveState();
+                    }
                 }
                 
                 render();
@@ -4336,6 +4442,14 @@
             
             alert(`Trail Created!\n\nName: ${state.createTrailData.name}\nTopic: ${state.createTrailData.topic}\nFocus: ${state.createTrailData.focusRatio}%`);
             
+            if (!state.achievements.firstTrailCreated) {
+                state.achievements.firstTrailCreated = true;
+                saveState();
+                celebrate('create');
+            } else {
+                saveState();
+            }
+
             // Reset form
             state.createTrailData = {
                 name: '',
@@ -4540,7 +4654,8 @@
                 selectedMetaTagsRight: state.selectedMetaTagsRight || [],
                 focusRatio: state.focusRatio,
                 activeTrail: state.activeTrail,
-                isTrailFeed: state.isTrailFeed
+                isTrailFeed: state.isTrailFeed,
+                achievements: state.achievements
             };
             localStorage.setItem('youtubeTrailsState', JSON.stringify(stateToSave));
         }
@@ -4552,6 +4667,9 @@
                     const savedState = JSON.parse(saved);
                     // Merge saved state with current state
                     Object.assign(state, savedState);
+                    if (!state.achievements) {
+                        state.achievements = { firstFollow: false, firstPark: false, firstTrailCreated: false };
+                    }
                 }
             } catch (e) {
                 console.log('Could not load saved state:', e);
