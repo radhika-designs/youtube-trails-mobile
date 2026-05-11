@@ -268,102 +268,41 @@ svg { display: block; width: 100%; height: auto; min-width: 0; }
 }
 
 /* ═══════════════════════════
-   TABLET + MOBILE (≤940px)
-   Top panel: chart fills viewport width, height = proportional to viewBox
-   Bottom panel: full width, content-height, no internal scroll
-   Page scrolls naturally if content is tall — no overflow containers
+   TABLET (641–940px)
+   Same stacked behaviour as mobile but more space
 ═══════════════════════════ */
-@media (max-width: 940px) {
-  /* unlock page scroll */
-  html, body {
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
-  /* stack panels vertically, natural page flow */
-  .layout {
-    flex-direction: column;
-    height: auto;
-    overflow: visible;
-  }
-
-  /* ── TOP PANEL: chart + controls ── */
-  .left {
-    width: 100% !important;
-    height: auto;           /* shrinks to content */
-    overflow: visible;      /* no scroll — everything shows */
-    padding: 14px 14px 0;
-    gap: 10px;
-  }
-
-  /* SVG: fills viewport width exactly, height scales via viewBox ratio
-     viewBox is 680×1020, so height = width × (1020/680) = width × 1.5
-     SVG renders as crisp vectors at any size — not rasterised */
-  .svg-wrap {
-    width: 100%;
-    overflow: visible;
-  }
-  svg {
-    width: 100% !important;
-    height: auto !important;
-    display: block;
-    /* crisp vector rendering at all scales */
-    shape-rendering: geometricPrecision;
-    text-rendering: geometricPrecision;
-  }
-
-  /* hide drag divider */
+@media (max-width: 940px) and (min-width: 641px) {
+  html, body { height: auto; overflow-x: hidden; overflow-y: auto; }
+  .layout { flex-direction: column; height: auto; overflow: visible; }
+  .left { width: 100% !important; height: auto; overflow: visible; padding: 14px 14px 0; }
+  .svg-wrap { width: 100%; overflow: visible; }
+  svg { width: 100% !important; height: auto !important; display: block; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
   .divider { display: none; }
+  .right { width: 100%; height: auto; border-left: none; border-top: 2px solid var(--accent); overflow: visible; display: block; }
+  .preview-header { position: sticky; top: 0; background: #fff; z-index: 5; }
+  .preview-body { flex: none; height: auto; overflow: visible; max-height: none; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .empty-state { min-height: 200px; }
+  .img-card { width: 100%; flex-shrink: 0; }
+  .img-card img { width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
+}
 
-  /* ── BOTTOM PANEL: images stack naturally ── */
-  .right {
-    width: 100%;
-    height: auto;           /* grows with content */
-    border-left: none;
-    border-top: 2px solid var(--accent);
-    overflow: visible;      /* no clipping */
-    /* not a flex column anymore — just normal block flow */
-    display: block;
-  }
-
-  /* header sticks to top of this section */
-  .preview-header {
-    position: sticky;
-    top: 0;
-    background: #fff;
-    z-index: 5;
-  }
-
-  /* image area: natural height, no scroll container */
-  .preview-body {
-    flex: none;
-    height: auto;
-    overflow: visible;
-    max-height: none;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  /* empty state: sensible height when nothing selected */
-  .empty-state {
-    min-height: 200px;
-  }
-
-  /* images fill width exactly, natural height */
-  .img-card {
-    width: 100%;
-    flex-shrink: 0;
-  }
-  .img-card img {
-    width: 100%;
-    height: auto;
-    /* vector-quality rendering hint for browser */
-    image-rendering: -webkit-optimize-contrast;
-  }
-
+/* ═══════════════════════════
+   MOBILE (≤640px)
+   Same as tablet, filter subtext hidden
+═══════════════════════════ */
+@media (max-width: 640px) {
+  html, body { height: auto; overflow-x: hidden; overflow-y: auto; }
+  .layout { flex-direction: column; height: auto; overflow: visible; }
+  .left { width: 100% !important; height: auto; overflow: visible; padding: 12px 12px 0; }
+  .svg-wrap { width: 100%; overflow: visible; }
+  svg { width: 100% !important; height: auto !important; display: block; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+  .divider { display: none; }
+  .right { width: 100%; height: auto; border-left: none; border-top: 2px solid var(--accent); overflow: visible; display: block; }
+  .preview-header { position: sticky; top: 0; background: #fff; z-index: 5; }
+  .preview-body { flex: none; height: auto; overflow: visible; max-height: none; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+  .empty-state { min-height: 160px; }
+  .img-card { width: 100%; flex-shrink: 0; }
+  .img-card img { width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
   .filter-subtext { display: none; }
 }
 </style>
