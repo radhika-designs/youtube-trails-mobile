@@ -16,18 +16,29 @@
   --accent:#7F77DD;
 }
 
-html, body { height: 100%; overflow: hidden; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
 /* ═══════════════════════════
-   OUTER LAYOUT
+   OUTER LAYOUT — desktop side-by-side
+   Uses 100% of whatever the iframe gives us — not 100vh
+   (100vh inside an iframe = iframe height, causing circular sizing)
 ═══════════════════════════ */
 .layout {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  width: 100%;
+  height: 100%;   /* fills the iframe, not viewport */
   overflow: hidden;
-  position: relative;
+  position: absolute; /* lock to iframe bounds */
+  top: 0; left: 0; right: 0; bottom: 0;
 }
 
 /* ═══════════════════════════
@@ -739,17 +750,31 @@ function setFilter(f,btn){
 })();
 
 // ── REPORT HEIGHT TO FRAMER ──────────────────────────────────
-// Sends document height to parent frame so Framer can resize
-// the iframe to fit content — no fixed height needed in Framer
+// On desktop: layout is position:absolute filling the iframe — 
+// report the taller of the two panels as the needed height.
+// On mobile: page scrolls naturally, report document scrollHeight.
 function reportHeight(){
-  const h = document.documentElement.scrollHeight;
+  const isMobile = window.innerWidth < 768;
+  let h;
+  if(isMobile){
+    h = document.documentElement.scrollHeight;
+  } else {
+    // desktop: both panels are fixed height — report the left panel
+    // scroll height (chart + controls) vs right panel, take the larger
+    const left = document.getElementById('leftPanel');
+    const right = document.getElementById('rightPanel');
+    h = Math.max(
+      left ? left.scrollHeight : 0,
+      right ? right.scrollHeight : 0,
+      600
+    );
+  }
   window.parent.postMessage({type:'ytt-height', height: h}, '*');
 }
-// report on load and whenever content changes
 window.addEventListener('load', reportHeight);
 new MutationObserver(reportHeight).observe(
   document.body,
-  {childList:true, subtree:true, attributes:true}
+  {childList:true, subtree:true, attributes:false, characterData:false}
 );
 window.addEventListener('resize', reportHeight);
 </script>
