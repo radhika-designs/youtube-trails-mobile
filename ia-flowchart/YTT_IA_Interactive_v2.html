@@ -12,163 +12,390 @@
   --flip-fill:#FAEEDA; --flip-stroke:#EF9F27; --flip-title:#633806; --flip-sub:#854F0B;
   --concept-fill:#FAECE7; --concept-stroke:#D85A30; --concept-title:#712B13; --concept-sub:#993C1D;
   --partial-fill:#F5F4F0; --partial-stroke:#B4B2A9; --partial-title:#5F5E5A; --partial-sub:#888780;
-  --bg:#FAFAF8; --border:#E8E6DF; --text:#1A1A18; --sub:#888780;
-  --left-w: 55%;
+  --bg:#FAFAF8; --border:#E8E6DF; --text:#1A1A18; --sub:#606060;
+  --accent:#7F77DD;
 }
 
 html, body { height: 100%; overflow: hidden; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
 
-/* ── LAYOUT ── */
-.layout { display: flex; height: 100vh; overflow: hidden; position: relative; }
+/* ═══════════════════════════
+   HOW TO USE — top instruction bar
+═══════════════════════════ */
+.how-to-bar {
+  background: #1A1A18;
+  color: #fff;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  z-index: 20;
+}
+.how-to-bar .step {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; line-height: 1.4;
+}
+.how-to-bar .step-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.how-to-bar .step-text { color: #E8E6DF; }
+.how-to-bar .sep { color: #444; font-size: 16px; }
 
-/* resizable divider */
+/* ═══════════════════════════
+   OUTER LAYOUT — desktop side-by-side
+═══════════════════════════ */
+.layout {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 44px); /* subtract how-to-bar */
+  overflow: hidden;
+  position: relative;
+}
+
+/* ═══════════════════════════
+   DIVIDER — explicit drag handle
+═══════════════════════════ */
 .divider {
-  width: 5px; background: var(--border); cursor: col-resize; flex-shrink: 0;
-  transition: background .15s; position: relative; z-index: 10;
+  width: 16px;
+  flex-shrink: 0;
+  background: #F1EFE8;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  cursor: col-resize;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  z-index: 10;
+  transition: background .15s;
+  position: relative;
 }
-.divider:hover, .divider.dragging { background: #7F77DD; }
-.divider::after {
-  content: '⋮'; position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%,-50%); font-size: 14px; color: #B4B2A9; user-select: none;
+.divider:hover, .divider.dragging { background: #EEEDFE; border-color: var(--accent); }
+/* three horizontal grip lines */
+.divider .grip-line {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #B4B2A9; flex-shrink: 0;
+  transition: background .15s;
 }
+.divider:hover .grip-line, .divider.dragging .grip-line { background: var(--accent); }
+/* tooltip label */
+.divider .drag-tip {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1A1A18;
+  color: #fff;
+  font-size: 9px;
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.divider:hover .drag-tip { opacity: 1; }
 
-/* ── LEFT PANEL ── */
+/* ═══════════════════════════
+   LEFT PANEL
+═══════════════════════════ */
 .left {
-  width: var(--left-w); flex-shrink: 0;
-  overflow-y: auto; overflow-x: auto;
-  padding: 16px;
-  display: flex; flex-direction: column; gap: 10px;
+  width: 52%;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.top-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.top-bar h1 { font-size: 13px; font-weight: 600; flex: 1; min-width: 160px; }
-.top-bar span { font-size: 11px; color: var(--sub); }
+.panel-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.01em;
+}
 
-.legend {
+/* ── LEGEND ── */
+.legend-block {
+  background: #F1EFE8;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.legend-label {
+  font-size: 10px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #888780; margin-bottom: 8px;
+}
+.legend-items {
   display: flex; flex-wrap: wrap; gap: 8px;
-  padding: 8px 10px; background: #F1EFE8; border-radius: 7px;
 }
-.leg { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #5F5E5A; }
-.leg-box { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+.leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #3A3A38; }
+.leg-box { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
 
-.filters { display: flex; gap: 6px; flex-wrap: wrap; }
-.filter-btn {
-  font-size: 11px; padding: 4px 10px; border-radius: 99px;
-  border: 1px solid #D3D1C7; background: #fff; color: #5F5E5A;
-  cursor: pointer; transition: all .15s;
+/* ── FILTERS ── */
+.filter-block {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
 }
-.filter-btn.active { background: #1A1A18; color: #fff; border-color: #1A1A18; }
+.filter-label {
+  font-size: 10px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #888780; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.filter-label::after {
+  content: '← tap to highlight only those nodes';
+  font-weight: 400; letter-spacing: 0; text-transform: none;
+  color: #B4B2A9; font-size: 10px;
+}
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  font-size: 11px; font-weight: 500;
+  padding: 6px 13px; border-radius: 99px;
+  border: 1.5px solid #D3D1C7;
+  background: #FAFAF8; color: #5F5E5A;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.filter-btn::before { content: '○'; font-size: 10px; color: #D3D1C7; }
+.filter-btn.active {
+  background: #1A1A18; color: #fff;
+  border-color: #1A1A18;
+}
+.filter-btn.active::before { content: '●'; color: var(--accent); }
+.filter-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); background: #F0EFFE; }
 
 .svg-wrap { overflow-x: auto; flex-shrink: 0; }
 svg { display: block; min-width: 680px; }
 
 .node-g { cursor: pointer; }
-.node-g rect, .node-g path { transition: filter .1s; }
-.node-g:hover rect { filter: brightness(0.93); }
-.node-g.selected rect { stroke-width: 2.5 !important; filter: drop-shadow(0 0 5px rgba(0,0,0,.2)); }
-.node-g.dimmed { opacity: 0.08; pointer-events: none; transition: opacity .2s; }
+.node-g:hover rect { filter: brightness(0.92); }
+.node-g.selected rect {
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 0 6px rgba(127,119,221,.45));
+}
+.node-g.dimmed { opacity: 0.07; pointer-events: none; transition: opacity .25s; }
 
-/* ── RIGHT PANEL ── */
+/* ═══════════════════════════
+   RIGHT PANEL
+═══════════════════════════ */
 .right {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column;
-  background: #fff; overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+  border-left: 1px solid var(--border);
 }
 
 .preview-header {
-  padding: 12px 16px 10px; border-bottom: 1px solid var(--border);
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .phase-badge {
-  display: inline-block; font-size: 10px; font-weight: 500;
-  padding: 2px 8px; border-radius: 99px; margin-bottom: 5px;
+  display: inline-block; font-size: 10px; font-weight: 600;
+  padding: 3px 9px; border-radius: 99px; margin-bottom: 6px;
+  letter-spacing: .02em;
 }
-.preview-header h2 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-.preview-header p { font-size: 11.5px; color: var(--sub); line-height: 1.55; }
+.preview-header h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.preview-header p { font-size: 12px; color: var(--sub); line-height: 1.6; }
 
-/* right panel image area — single column, always vertical scroll */
+/* image scroll area — single column, full-width, lossless */
 .preview-body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  /* smooth scroll on mobile */
+  -webkit-overflow-scrolling: touch;
 }
 
 .img-card {
-  border-radius: 8px; overflow: hidden;
+  border-radius: 8px;
+  overflow: hidden;
   border: 1px solid var(--border);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  flex-shrink: 0; /* never compress image cards */
+  flex-shrink: 0;
 }
 .img-card img {
   width: 100%;
-  height: auto; /* always full natural height — no cropping */
+  height: auto;           /* always natural height — never crop */
   display: block;
-  object-fit: contain;
+  /* contain without upscaling beyond natural size */
+  max-width: 100%;
+  image-rendering: -webkit-optimize-contrast; /* sharper on retina */
   background: #F5F4F0;
 }
 .img-caption {
-  font-size: 10px; color: var(--sub);
-  padding: 5px 8px; background: #F8F7F4;
-  line-height: 1.4; flex-shrink: 0;
+  font-size: 11px;
+  color: var(--sub);
+  padding: 7px 10px;
+  background: #F8F7F4;
+  line-height: 1.45;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
 }
 
 .note-box {
-  font-size: 11px; line-height: 1.6; padding: 8px 10px;
-  border-radius: 6px; background: #FFF8EC; color: #633806;
-  border-left: 3px solid #EF9F27;
+  font-size: 11.5px; line-height: 1.65; padding: 10px 12px;
+  border-radius: 7px; background: #FFF8EC; color: #633806;
+  border-left: 3px solid #EF9F27; flex-shrink: 0;
 }
 .no-img {
-  font-size: 11px; color: var(--sub); padding: 20px;
-  background: #F5F4F0; border-radius: 6px; text-align: center;
+  font-size: 12px; color: var(--sub); padding: 24px;
+  background: #F5F4F0; border-radius: 8px; text-align: center;
 }
 
+/* empty state — prominent, not subtle */
 .empty-state {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  color: var(--sub); font-size: 12px; text-align: center;
-  padding: 20px; gap: 8px;
+  gap: 12px; padding: 24px; text-align: center;
 }
-.empty-icon { font-size: 32px; opacity: .3; }
+.empty-icon {
+  font-size: 36px; opacity: .2;
+}
+.empty-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+}
+.empty-sub {
+  font-size: 12px; color: var(--sub); line-height: 1.6; max-width: 200px;
+}
+.empty-arrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; color: var(--accent);
+  background: #F0EFFE; padding: 6px 14px; border-radius: 99px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: translateX(0); }
+  50% { opacity: .7; transform: translateX(-4px); }
+}
 
-/* mobile: stack vertically */
+/* ═══════════════════════════
+   RESPONSIVE — tablet (641–940px): same side-by-side
+   but right panel min-width reduced
+═══════════════════════════ */
+@media (max-width: 940px) and (min-width: 641px) {
+  .left { width: 50%; }
+  .how-to-bar .sep { display: none; }
+}
+
+/* ═══════════════════════════
+   RESPONSIVE — mobile (≤640px): full vertical stack
+═══════════════════════════ */
 @media (max-width: 640px) {
-  .layout { flex-direction: column; height: auto; overflow: auto; }
   html, body { height: auto; overflow: auto; }
-  .left { width: 100% !important; overflow-x: auto; }
-  .right { min-height: 60vh; }
+
+  .how-to-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+  .how-to-bar .sep { display: none; }
+
+  .layout {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* left panel: full width, natural height (scrolls with page) */
+  .left {
+    width: 100% !important;
+    overflow-x: auto;
+    overflow-y: visible;
+    height: auto;
+    max-height: none;
+  }
+
+  /* hide drag divider on mobile */
   .divider { display: none; }
+
+  /* right panel: full width, fixed tall height, scrolls internally */
+  .right {
+    width: 100%;
+    border-left: none;
+    border-top: 2px solid var(--accent);
+    height: auto;
+    min-height: 80vh;
+    overflow: hidden;
+    position: sticky;
+    top: 0;
+  }
+
+  .preview-body {
+    max-height: calc(100vh - 120px);
+  }
+
+  /* images stay full-width on mobile — no shrinking */
+  .img-card img {
+    width: 100%;
+    height: auto;
+  }
+
+  .filter-label::after {
+    display: none; /* too long on mobile */
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- ══ HOW TO USE BAR ══ -->
+<div class="how-to-bar">
+  <div class="step"><div class="step-num">1</div><span class="step-text">Read the colour legend below — each colour = a design phase</span></div>
+  <div class="sep">|</div>
+  <div class="step"><div class="step-num">2</div><span class="step-text">Use the filter buttons to highlight only Phase 1 or Phase 2 nodes</span></div>
+  <div class="sep">|</div>
+  <div class="step"><div class="step-num">3</div><span class="step-text">Click any coloured node → its prototype screen appears on the right</span></div>
+  <div class="sep">|</div>
+  <div class="step"><div class="step-num">4</div><span class="step-text">Drag the centre handle ↔ to resize both panels</span></div>
+</div>
+
 <div class="layout" id="layout">
 
 <!-- ══ LEFT ══ -->
 <div class="left" id="leftPanel">
-  <div class="top-bar">
-    <h1>YouTube Trails — IA Flowchart</h1>
-    <span>Click any node → see its screen →</span>
+  <div class="panel-title">YouTube Trails — Information Architecture</div>
+
+  <!-- LEGEND -->
+  <div class="legend-block">
+    <div class="legend-label">Node colour = design phase</div>
+    <div class="legend-items">
+      <div class="leg"><div class="leg-box" style="background:var(--p1-fill);border:1.5px solid var(--p1-stroke)"></div>Phase 1 — researched &amp; user tested</div>
+      <div class="leg"><div class="leg-box" style="background:var(--p2-fill);border:1.5px solid var(--p2-stroke)"></div>Phase 2 — built in Cursor, not tested</div>
+      <div class="leg"><div class="leg-box" style="background:var(--flip-fill);border:1.5px solid var(--flip-stroke)"></div>Evolved / decision flipped vs Phase 1</div>
+      <div class="leg"><div class="leg-box" style="background:var(--concept-fill);border:1.5px solid var(--concept-stroke)"></div>Concept only — no data behind it</div>
+      <div class="leg"><div class="leg-box" style="background:var(--partial-fill);border:1.5px dashed var(--partial-stroke)"></div>Partial — UI exists, interaction not wired</div>
+    </div>
   </div>
 
-  <div class="legend">
-    <div class="leg"><div class="leg-box" style="background:var(--p1-fill);border:1.5px solid var(--p1-stroke)"></div>Phase 1 tested</div>
-    <div class="leg"><div class="leg-box" style="background:var(--p2-fill);border:1.5px solid var(--p2-stroke)"></div>Phase 2 Cursor</div>
-    <div class="leg"><div class="leg-box" style="background:var(--flip-fill);border:1.5px solid var(--flip-stroke)"></div>Evolved/flipped</div>
-    <div class="leg"><div class="leg-box" style="background:var(--concept-fill);border:1.5px solid var(--concept-stroke)"></div>Concept only</div>
-    <div class="leg"><div class="leg-box" style="background:var(--partial-fill);border:1.5px dashed var(--partial-stroke)"></div>Partial</div>
-  </div>
-
-  <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('all',this)">Show all</button>
-    <button class="filter-btn" onclick="setFilter('p1',this)">Phase 1 only</button>
-    <button class="filter-btn" onclick="setFilter('p2',this)">Phase 2 additions</button>
-    <button class="filter-btn" onclick="setFilter('untested',this)">Never tested</button>
+  <!-- FILTERS -->
+  <div class="filter-block">
+    <div class="filter-label">Filter nodes</div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all',this)">Show all</button>
+      <button class="filter-btn" onclick="setFilter('p1',this)">Phase 1 only</button>
+      <button class="filter-btn" onclick="setFilter('p2',this)">Phase 2 additions</button>
+      <button class="filter-btn" onclick="setFilter('untested',this)">Never tested</button>
+    </div>
   </div>
 
   <div class="svg-wrap">
@@ -408,14 +635,23 @@ svg { display: block; min-width: 680px; }
   </div>
 </div>
 
-<!-- resizable divider -->
-<div class="divider" id="divider"></div>
+<!-- resizable divider with explicit grip -->
+<div class="divider" id="divider">
+  <div class="grip-line"></div>
+  <div class="grip-line"></div>
+  <div class="grip-line"></div>
+  <div class="grip-line"></div>
+  <div class="grip-line"></div>
+  <span class="drag-tip">drag to resize</span>
+</div>
 
 <!-- ══ RIGHT ══ -->
 <div class="right" id="rightPanel">
   <div id="emptyState" class="empty-state">
-    <div class="empty-icon">←</div>
-    <div>Click any node in the flowchart<br>to see its screens here</div>
+    <div class="empty-icon">🖱</div>
+    <div class="empty-title">Click any node to see its screen</div>
+    <div class="empty-sub">Each coloured box in the flowchart links to the actual prototype or wireframe screenshot for that part of the design.</div>
+    <div class="empty-arrow">← click a node to start</div>
   </div>
   <div id="previewHeader" class="preview-header" style="display:none">
     <div id="phaseBadge" class="phase-badge"></div>
@@ -551,18 +787,38 @@ function setFilter(f,btn){
     divider.classList.add('dragging');
     document.body.style.cursor='col-resize';
     document.body.style.userSelect='none';
+    e.preventDefault();
   });
   document.addEventListener('mousemove',e=>{
     if(!dragging)return;
     const totalW=layout.getBoundingClientRect().width;
-    const newW=Math.max(320,Math.min(totalW-260,startW+(e.clientX-startX)));
+    const newW=Math.max(300,Math.min(totalW-240,startW+(e.clientX-startX)));
     left.style.width=newW+'px';
   });
   document.addEventListener('mouseup',()=>{
+    if(!dragging)return;
     dragging=false;
     divider.classList.remove('dragging');
     document.body.style.cursor='';
     document.body.style.userSelect='';
+  });
+
+  // touch support for tablet
+  divider.addEventListener('touchstart',e=>{
+    dragging=true;
+    startX=e.touches[0].clientX;
+    startW=left.getBoundingClientRect().width;
+    divider.classList.add('dragging');
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    const totalW=layout.getBoundingClientRect().width;
+    const newW=Math.max(300,Math.min(totalW-240,startW+(e.touches[0].clientX-startX)));
+    left.style.width=newW+'px';
+  },{passive:true});
+  document.addEventListener('touchend',()=>{
+    dragging=false;
+    divider.classList.remove('dragging');
   });
 })();
 </script>
