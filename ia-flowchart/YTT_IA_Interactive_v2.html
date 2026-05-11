@@ -829,6 +829,21 @@ function setFilter(f,btn){
     divider.classList.remove('dragging');
   });
 })();
+
+// ── REPORT HEIGHT TO FRAMER ──────────────────────────────────
+// Sends document height to parent frame so Framer can resize
+// the iframe to fit content — no fixed height needed in Framer
+function reportHeight(){
+  const h = document.documentElement.scrollHeight;
+  window.parent.postMessage({type:'ytt-height', height: h}, '*');
+}
+// report on load and whenever content changes
+window.addEventListener('load', reportHeight);
+new MutationObserver(reportHeight).observe(
+  document.body,
+  {childList:true, subtree:true, attributes:true}
+);
+window.addEventListener('resize', reportHeight);
 </script>
 </body>
 </html>
