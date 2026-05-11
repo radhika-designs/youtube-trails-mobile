@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Trails — IA Flowchart</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --p1-fill:#E1F5EE; --p1-stroke:#1D9E75; --p1-title:#085041; --p1-sub:#0F6E56;
+  --p2-fill:#EEEDFE; --p2-stroke:#7F77DD; --p2-title:#3C3489; --p2-sub:#534AB7;
+  --flip-fill:#FAEEDA; --flip-stroke:#EF9F27; --flip-title:#633806; --flip-sub:#854F0B;
+  --concept-fill:#FAECE7; --concept-stroke:#D85A30; --concept-title:#712B13; --concept-sub:#993C1D;
+  --partial-fill:#F5F4F0; --partial-stroke:#B4B2A9; --partial-title:#5F5E5A; --partial-sub:#888780;
+  --bg:#FAFAF8; --border:#E8E6DF; --text:#1A1A18; --sub:#888780;
+  --left-w: 55%;
+}
+
+html, body { height: 100%; overflow: hidden; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+
+/* ── LAYOUT ── */
+.layout { display: flex; height: 100vh; overflow: hidden; position: relative; }
+
+/* resizable divider */
+.divider {
+  width: 5px; background: var(--border); cursor: col-resize; flex-shrink: 0;
+  transition: background .15s; position: relative; z-index: 10;
+}
+.divider:hover, .divider.dragging { background: #7F77DD; }
+.divider::after {
+  content: '⋮'; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%); font-size: 14px; color: #B4B2A9; user-select: none;
+}
+
+/* ── LEFT PANEL ── */
+.left {
+  width: var(--left-w); flex-shrink: 0;
+  overflow-y: auto; overflow-x: auto;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.top-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.top-bar h1 { font-size: 13px; font-weight: 600; flex: 1; min-width: 160px; }
+.top-bar span { font-size: 11px; color: var(--sub); }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 8px 10px; background: #F1EFE8; border-radius: 7px;
+}
+.leg { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #5F5E5A; }
+.leg-box { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  font-size: 11px; padding: 4px 10px; border-radius: 99px;
+  border: 1px solid #D3D1C7; background: #fff; color: #5F5E5A;
+  cursor: pointer; transition: all .15s;
+}
+.filter-btn.active { background: #1A1A18; color: #fff; border-color: #1A1A18; }
+
+.svg-wrap { overflow-x: auto; flex-shrink: 0; }
+svg { display: block; min-width: 680px; }
+
+.node-g { cursor: pointer; }
+.node-g rect, .node-g path { transition: filter .1s; }
+.node-g:hover rect { filter: brightness(0.93); }
+.node-g.selected rect { stroke-width: 2.5 !important; filter: drop-shadow(0 0 5px rgba(0,0,0,.2)); }
+.node-g.dimmed { opacity: 0.08; pointer-events: none; transition: opacity .2s; }
+
+/* ── RIGHT PANEL ── */
+.right {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+  background: #fff; overflow: hidden;
+}
+
+.preview-header {
+  padding: 12px 16px 10px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.phase-badge {
+  display: inline-block; font-size: 10px; font-weight: 500;
+  padding: 2px 8px; border-radius: 99px; margin-bottom: 5px;
+}
+.preview-header h2 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.preview-header p { font-size: 11.5px; color: var(--sub); line-height: 1.55; }
+
+/* right panel image area — single column, always vertical scroll */
+.preview-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.img-card {
+  border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  width: 100%;
+  flex-shrink: 0; /* never compress image cards */
+}
+.img-card img {
+  width: 100%;
+  height: auto; /* always full natural height — no cropping */
+  display: block;
+  object-fit: contain;
+  background: #F5F4F0;
+}
+.img-caption {
+  font-size: 10px; color: var(--sub);
+  padding: 5px 8px; background: #F8F7F4;
+  line-height: 1.4; flex-shrink: 0;
+}
+
+.note-box {
+  font-size: 11px; line-height: 1.6; padding: 8px 10px;
+  border-radius: 6px; background: #FFF8EC; color: #633806;
+  border-left: 3px solid #EF9F27;
+}
+.no-img {
+  font-size: 11px; color: var(--sub); padding: 20px;
+  background: #F5F4F0; border-radius: 6px; text-align: center;
+}
+
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--sub); font-size: 12px; text-align: center;
+  padding: 20px; gap: 8px;
+}
+.empty-icon { font-size: 32px; opacity: .3; }
+
+/* mobile: stack vertically */
+@media (max-width: 640px) {
+  .layout { flex-direction: column; height: auto; overflow: auto; }
+  html, body { height: auto; overflow: auto; }
+  .left { width: 100% !important; overflow-x: auto; }
+  .right { min-height: 60vh; }
+  .divider { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="layout" id="layout">
+
+<!-- ══ LEFT ══ -->
+<div class="left" id="leftPanel">
+  <div class="top-bar">
+    <h1>YouTube Trails — IA Flowchart</h1>
+    <span>Click any node → see its screen →</span>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="leg-box" style="background:var(--p1-fill);border:1.5px solid var(--p1-stroke)"></div>Phase 1 tested</div>
+    <div class="leg"><div class="leg-box" style="background:var(--p2-fill);border:1.5px solid var(--p2-stroke)"></div>Phase 2 Cursor</div>
+    <div class="leg"><div class="leg-box" style="background:var(--flip-fill);border:1.5px solid var(--flip-stroke)"></div>Evolved/flipped</div>
+    <div class="leg"><div class="leg-box" style="background:var(--concept-fill);border:1.5px solid var(--concept-stroke)"></div>Concept only</div>
+    <div class="leg"><div class="leg-box" style="background:var(--partial-fill);border:1.5px dashed var(--partial-stroke)"></div>Partial</div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">Show all</button>
+    <button class="filter-btn" onclick="setFilter('p1',this)">Phase 1 only</button>
+    <button class="filter-btn" onclick="setFilter('p2',this)">Phase 2 additions</button>
+    <button class="filter-btn" onclick="setFilter('untested',this)">Never tested</button>
+  </div>
+
+  <div class="svg-wrap">
+  <svg id="iasvg" width="680" height="1020" viewBox="0 0 680 1020">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#C8C6BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- CONNECTORS — all path/line with fill=none -->
+  <line x1="340" y1="64" x2="340" y2="88" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="300" y1="88" x2="74" y2="94" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="315" y1="88" x2="197" y2="94" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="335" y1="88" x2="320" y2="94" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="355" y1="88" x2="443" y2="94" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="375" y1="88" x2="566" y2="94" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="74" y1="138" x2="74" y2="162" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="74" y1="218" x2="74" y2="242" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="74" y1="298" x2="74" y2="322" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="74" y1="378" x2="74" y2="402" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="74" y1="458" x2="74" y2="482" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="197" y1="138" x2="197" y2="162" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="197" y1="218" x2="197" y2="242" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="197" y1="298" x2="197" y2="322" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="197" y1="366" x2="197" y2="390" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="197" y1="434" x2="197" y2="450" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="197" y1="494" x2="197" y2="510" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="197" y1="566" x2="197" y2="582" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="320" y1="138" x2="320" y2="162" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="320" y1="218" x2="320" y2="242" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="320" y1="298" x2="320" y2="322" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="443" y1="138" x2="443" y2="162" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="443" y1="218" x2="443" y2="242" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="443" y1="298" x2="443" y2="322" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="566" y1="138" x2="566" y2="162" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="566" y1="218" x2="566" y2="242" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <line x1="566" y1="298" x2="566" y2="322" fill="none" stroke="#C8C6BE" stroke-width="0.5"/>
+  <!-- dashed modal connectors using path -->
+  <path d="M74,538 L74,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M74,716 L100,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M74,538 L230,538" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M230,538 L230,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M230,716 L200,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M320,378 L380,378" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M380,378 L380,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M380,716 L360,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M443,366 L530,366" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M530,366 L530,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+  <path d="M530,716 L510,716" fill="none" stroke="#C8C6BE" stroke-width="0.5" stroke-dasharray="4,3"/>
+
+  <text x="340" y="706" text-anchor="middle" font-size="10" font-weight="500" fill="#888780" letter-spacing="0.06em">MODAL OVERLAYS — triggered from feed</text>
+
+  <!-- NODES -->
+  <g class="node-g" data-id="entry" data-phase="p1" onclick="selectNode('entry')">
+    <rect x="240" y="20" width="200" height="44" rx="7" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+    <text x="340" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="#085041">YouTube Trails entry</text>
+    <text x="340" y="54" text-anchor="middle" font-size="10" fill="#0F6E56">Toggle: Regular ↔ Trail Feed</text>
+  </g>
+  <g class="node-g" data-id="home" data-phase="p1" onclick="selectNode('home')">
+    <rect x="20" y="94" width="108" height="44" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+    <text x="74" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#085041">Home</text>
+    <text x="74" y="128" text-anchor="middle" font-size="10" fill="#0F6E56">Feed entry</text>
+  </g>
+  <g class="node-g" data-id="trails-nav" data-phase="p1" onclick="selectNode('trails-nav')">
+    <rect x="143" y="94" width="108" height="44" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+    <text x="197" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#085041">Trails ③</text>
+    <text x="197" y="128" text-anchor="middle" font-size="10" fill="#0F6E56">My trails hub</text>
+  </g>
+  <g class="node-g" data-id="create-nav" data-phase="p2" onclick="selectNode('create-nav')">
+    <rect x="266" y="94" width="108" height="44" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>
+    <text x="320" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#3C3489">+ Create</text>
+    <text x="320" y="128" text-anchor="middle" font-size="10" fill="#534AB7">Added Cursor v2</text>
+  </g>
+  <g class="node-g" data-id="parked-nav" data-phase="flip" onclick="selectNode('parked-nav')">
+    <rect x="389" y="94" width="108" height="44" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+    <text x="443" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#633806">Parked ⑥</text>
+    <text x="443" y="128" text-anchor="middle" font-size="10" fill="#854F0B">Flipped: own tab</text>
+  </g>
+  <g class="node-g" data-id="you-nav" data-phase="p2" onclick="selectNode('you-nav')">
+    <rect x="512" y="94" width="108" height="44" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>
+    <text x="566" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#3C3489">You</text>
+    <text x="566" y="128" text-anchor="middle" font-size="10" fill="#534AB7">Profile + guide</text>
+  </g>
+  <g class="node-g" data-id="regular-feed" data-phase="p1" onclick="selectNode('regular-feed')">
+    <rect x="20" y="162" width="108" height="56" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+    <text x="74" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">Regular feed</text>
+    <text x="74" y="196" text-anchor="middle" font-size="10" fill="#0F6E56">YouTube nav</text>
+    <text x="74" y="208" text-anchor="middle" font-size="10" fill="#0F6E56">All/Following/Trending</text>
+  </g>
+  <g class="node-g" data-id="trail-feed" data-phase="p1" onclick="selectNode('trail-feed')">
+    <rect x="20" y="242" width="108" height="56" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+    <text x="74" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">Trail feed</text>
+    <text x="74" y="276" text-anchor="middle" font-size="10" fill="#0F6E56">Trail pills</text>
+    <text x="74" y="288" text-anchor="middle" font-size="10" fill="#0F6E56">Park + Trail on card</text>
+  </g>
+  <g class="node-g" data-id="smart-suggest" data-phase="p2" onclick="selectNode('smart-suggest')">
+    <rect x="20" y="322" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="74" y="342" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Smart suggestion</text>
+    <text x="74" y="356" text-anchor="middle" font-size="10" fill="#534AB7">"7+ Yoga videos</text>
+    <text x="74" y="368" text-anchor="middle" font-size="10" fill="#534AB7">→ create trail?"</text>
+  </g>
+  <g class="node-g" data-id="content-slider" data-phase="flip" onclick="selectNode('content-slider')">
+    <rect x="20" y="402" width="108" height="56" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1"/>
+    <text x="74" y="419" text-anchor="middle" font-size="11" font-weight="600" fill="#633806">Content balance</text>
+    <text x="74" y="433" text-anchor="middle" font-size="10" fill="#854F0B">P1: single axis</text>
+    <text x="74" y="447" text-anchor="middle" font-size="10" fill="#854F0B">P2: dual-topic %</text>
+  </g>
+  <g class="node-g" data-id="topic-selector" data-phase="p2" onclick="selectNode('topic-selector')">
+    <rect x="20" y="482" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="74" y="499" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Topic selector</text>
+    <text x="74" y="513" text-anchor="middle" font-size="10" fill="#534AB7">Main topic + tags</text>
+    <text x="74" y="525" text-anchor="middle" font-size="10" fill="#534AB7">Topic connections</text>
+  </g>
+  <g class="node-g" data-id="my-trails" data-phase="p1" onclick="selectNode('my-trails')">
+    <rect x="143" y="162" width="108" height="56" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+    <text x="197" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">My trails list</text>
+    <text x="197" y="196" text-anchor="middle" font-size="10" fill="#0F6E56">Following / Created</text>
+    <text x="197" y="208" text-anchor="middle" font-size="10" fill="#0F6E56">tabs</text>
+  </g>
+  <g class="node-g" data-id="trail-cards" data-phase="p2" onclick="selectNode('trail-cards')">
+    <rect x="143" y="242" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="197" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Rich trail cards</text>
+    <text x="197" y="276" text-anchor="middle" font-size="10" fill="#534AB7">Creator, followers,</text>
+    <text x="197" y="288" text-anchor="middle" font-size="10" fill="#534AB7">focus ratio, difficulty</text>
+  </g>
+  <g class="node-g" data-id="trail-details" data-phase="p1" onclick="selectNode('trail-details')">
+    <rect x="143" y="322" width="108" height="44" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+    <text x="197" y="340" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">Trail details hub</text>
+    <text x="197" y="356" text-anchor="middle" font-size="10" fill="#0F6E56">4-tab sub-nav</text>
+  </g>
+  <g class="node-g" data-id="videos-tab" data-phase="p1" onclick="selectNode('videos-tab')">
+    <rect x="143" y="390" width="108" height="44" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
+    <text x="197" y="408" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">Videos tab</text>
+    <text x="197" y="424" text-anchor="middle" font-size="10" fill="#0F6E56">List + topic tags</text>
+  </g>
+  <g class="node-g" data-id="tags-tab" data-phase="p2" onclick="selectNode('tags-tab')">
+    <rect x="143" y="450" width="108" height="44" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="197" y="468" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Tags tab</text>
+    <text x="197" y="484" text-anchor="middle" font-size="10" fill="#534AB7">Keyword pills</text>
+  </g>
+  <g class="node-g" data-id="notes-tab" data-phase="p2" onclick="selectNode('notes-tab')">
+    <rect x="143" y="510" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="197" y="530" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Notes tab</text>
+    <text x="197" y="544" text-anchor="middle" font-size="10" fill="#534AB7">Overview, prereqs,</text>
+    <text x="197" y="556" text-anchor="middle" font-size="10" fill="#534AB7">personal input</text>
+  </g>
+  <g class="node-g" data-id="path-tab" data-phase="p2" onclick="selectNode('path-tab')">
+    <rect x="143" y="582" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="197" y="602" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Path tab</text>
+    <text x="197" y="616" text-anchor="middle" font-size="10" fill="#534AB7">Progress bar</text>
+    <text x="197" y="628" text-anchor="middle" font-size="10" fill="#534AB7">timeline + watched</text>
+  </g>
+  <g class="node-g" data-id="create-form" data-phase="p2" onclick="selectNode('create-form')">
+    <rect x="266" y="162" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="320" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Create trail form</text>
+    <text x="320" y="196" text-anchor="middle" font-size="10" fill="#534AB7">Name, description</text>
+    <text x="320" y="208" text-anchor="middle" font-size="10" fill="#534AB7">topic chips</text>
+  </g>
+  <g class="node-g" data-id="focus-setup" data-phase="p2" onclick="selectNode('focus-setup')">
+    <rect x="266" y="242" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="320" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Focus setup</text>
+    <text x="320" y="276" text-anchor="middle" font-size="10" fill="#534AB7">Two topics VS layout</text>
+    <text x="320" y="288" text-anchor="middle" font-size="10" fill="#534AB7">balance slider + %</text>
+  </g>
+  <g class="node-g" data-id="collab" data-phase="concept" onclick="selectNode('collab')">
+    <rect x="266" y="322" width="108" height="56" rx="6" fill="#FAECE7" stroke="#D85A30" stroke-width="1"/>
+    <text x="320" y="342" text-anchor="middle" font-size="11" font-weight="600" fill="#712B13">Collab playlists</text>
+    <text x="320" y="356" text-anchor="middle" font-size="10" fill="#993C1D">3 screens built</text>
+    <text x="320" y="368" text-anchor="middle" font-size="10" fill="#993C1D">no data behind it</text>
+  </g>
+  <g class="node-g" data-id="parked-stats" data-phase="p2" onclick="selectNode('parked-stats')">
+    <rect x="389" y="162" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="443" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Stats header</text>
+    <text x="443" y="196" text-anchor="middle" font-size="10" fill="#534AB7">To Watch / Time</text>
+    <text x="443" y="208" text-anchor="middle" font-size="10" fill="#534AB7">/ Watched</text>
+  </g>
+  <g class="node-g" data-id="parked-towatch" data-phase="flip" onclick="selectNode('parked-towatch')">
+    <rect x="389" y="242" width="108" height="56" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1"/>
+    <text x="443" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#633806">To Watch tab</text>
+    <text x="443" y="276" text-anchor="middle" font-size="10" fill="#854F0B">Per-video note</text>
+    <text x="443" y="288" text-anchor="middle" font-size="10" fill="#854F0B">Add to Trail, Watch</text>
+  </g>
+  <g class="node-g" data-id="parked-watched" data-phase="p2" onclick="selectNode('parked-watched')">
+    <rect x="389" y="322" width="108" height="44" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="443" y="340" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Watched tab</text>
+    <text x="443" y="356" text-anchor="middle" font-size="10" fill="#534AB7">Completed queue</text>
+  </g>
+  <g class="node-g" data-id="profile" data-phase="p2" onclick="selectNode('profile')">
+    <rect x="512" y="162" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="566" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Profile</text>
+    <text x="566" y="196" text-anchor="middle" font-size="10" fill="#534AB7">Trails summary</text>
+    <text x="566" y="208" text-anchor="middle" font-size="10" fill="#534AB7">notifications, focus %</text>
+  </g>
+  <g class="node-g" data-id="onboarding-hub" data-phase="p2" onclick="selectNode('onboarding-hub')">
+    <rect x="512" y="242" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="566" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Onboarding hub</text>
+    <text x="566" y="276" text-anchor="middle" font-size="10" fill="#534AB7">Choose flow</text>
+    <text x="566" y="288" text-anchor="middle" font-size="10" fill="#534AB7">or complete guide</text>
+  </g>
+  <g class="node-g" data-id="complete-guide" data-phase="p2" onclick="selectNode('complete-guide')">
+    <rect x="512" y="322" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="566" y="342" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Complete guide</text>
+    <text x="566" y="356" text-anchor="middle" font-size="10" fill="#534AB7">All 10 features</text>
+    <text x="566" y="368" text-anchor="middle" font-size="10" fill="#534AB7">scrollable, always-on</text>
+  </g>
+  <g class="node-g" data-id="modal-onboarding" data-phase="p2" onclick="selectNode('modal-onboarding')">
+    <rect x="20" y="720" width="130" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="85" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Onboarding cards</text>
+    <text x="85" y="754" text-anchor="middle" font-size="10" fill="#534AB7">8 contextual cards</text>
+    <text x="85" y="766" text-anchor="middle" font-size="10" fill="#534AB7">first-use triggered</text>
+  </g>
+  <g class="node-g" data-id="modal-balance" data-phase="p2" onclick="selectNode('modal-balance')">
+    <rect x="165" y="720" width="130" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="230" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Content balance</text>
+    <text x="230" y="754" text-anchor="middle" font-size="10" fill="#534AB7">Tap focus ratio</text>
+    <text x="230" y="766" text-anchor="middle" font-size="10" fill="#534AB7">→ panel over feed</text>
+  </g>
+  <g class="node-g" data-id="modal-topics" data-phase="p2" onclick="selectNode('modal-topics')">
+    <rect x="310" y="720" width="130" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
+    <text x="375" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Topic selector</text>
+    <text x="375" y="754" text-anchor="middle" font-size="10" fill="#534AB7">Main + meta tags</text>
+    <text x="375" y="766" text-anchor="middle" font-size="10" fill="#534AB7">topic connections</text>
+  </g>
+  <g class="node-g" data-id="modal-suggest-cta" data-phase="partial" onclick="selectNode('modal-suggest-cta')">
+    <rect x="455" y="720" width="130" height="56" rx="6" fill="#F5F4F0" stroke="#B4B2A9" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="520" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#5F5E5A">Create trail CTA</text>
+    <text x="520" y="754" text-anchor="middle" font-size="10" fill="#888780">Banner visible</text>
+    <text x="520" y="766" text-anchor="middle" font-size="10" fill="#888780">flow not wired</text>
+  </g>
+
+  <!-- summary bar -->
+  <rect x="20" y="820" width="640" height="52" rx="8" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+  <text x="340" y="840" text-anchor="middle" font-size="11" font-weight="600" fill="#2C2C2A">Phase 1 tested: 5 · Phase 2 added: 18 · Flipped: 2 · Concept only: 1 · Partial: 1</text>
+  <text x="340" y="858" text-anchor="middle" font-size="10" fill="#888780">Original tree test: 7 tasks — current IA never retested with users</text>
+  </svg>
+  </div>
+</div>
+
+<!-- resizable divider -->
+<div class="divider" id="divider"></div>
+
+<!-- ══ RIGHT ══ -->
+<div class="right" id="rightPanel">
+  <div id="emptyState" class="empty-state">
+    <div class="empty-icon">←</div>
+    <div>Click any node in the flowchart<br>to see its screens here</div>
+  </div>
+  <div id="previewHeader" class="preview-header" style="display:none">
+    <div id="phaseBadge" class="phase-badge"></div>
+    <h2 id="previewTitle"></h2>
+    <p id="previewDesc"></p>
+  </div>
+  <div id="previewBody" class="preview-body" style="display:none"></div>
+</div>
+
+</div><!-- layout -->
+
+<script>
+// ── NODE DATA ──────────────────────────────────────────────
+const NODES = {
+  "entry":{title:"YouTube Trails entry",phase:"p1",desc:"Top-level toggle. Switches between Regular and Trail Feed — the gateway to the entire system. Nav bar changes automatically based on active mode.",imgs:[{src:"onboarding1.png",cap:"Welcome onboarding — first screen a new user sees"},{src:"refular-toggle-YT-view.png",cap:"Regular mode active — YouTube's native nav"},{src:"trailFeed-toggle-on-home.png",cap:"Trail Feed active — Trail nav switches in automatically"},{src:"onboarding-feed-toggle.png",cap:"Feed Toggle onboarding card"}]},
+  "home":{title:"Home tab",phase:"p1",desc:"Primary tab. Houses both Regular and Trail feeds. Bottom nav changes automatically based on which feed is active.",imgs:[{src:"refular-toggle-YT-view.png",cap:"Regular mode — YouTube's familiar layout with smart suggestion banner"},{src:"trailFeed-toggle-on-home.png",cap:"Trail mode — Trail nav, focus ratio inline, Web Dev selected"}]},
+  "trails-nav":{title:"Trails tab",phase:"p1",desc:"My Trails hub — all trails you follow or created. Badge shows active count. Following / Created sub-tabs.",imgs:[{src:"Trails-tab.png",cap:"Trails tab — Following and Created pills"},{src:"myTrail-following-myCreatedTrails-access-tab.png",cap:"Rich trail cards — Quantum Physics, Machine Learning with verified creator badges"}]},
+  "create-nav":{title:"+ Create tab",phase:"p2",desc:"Dedicated create tab added in Cursor v2. The centre '+' in the Trail nav bar.",imgs:[{src:"create-trail-center-tab.png",cap:"Create Trail form — name, description, topic chips, content focus VS layout"},{src:"create-trail-confirmation.png",cap:"Trail created — confirmation shows focus settings (Node.js 70% ↔ JS 30%)"}]},
+  "parked-nav":{title:"Parked tab",phase:"flip",desc:"Originally planned nested under History & Playlists. Flipped during Cursor — became its own prominent bottom tab with badge.",imgs:[{src:"parked-tab.png",cap:"Parked Videos — stats header, To Watch/Watched tabs, per-video notes"},{src:"onboarding-park-videos.png",cap:"Parked Videos onboarding card — 'The problem with Watch Later'"}]},
+  "you-nav":{title:"You tab",phase:"p2",desc:"Profile & Settings. Houses Complete Guide (all 10 features), onboarding choice, default focus ratio, notification settings.",imgs:[{src:"user-profile-tab.png",cap:"Profile & Settings — full list with Onboarding and Complete Guide entries"}]},
+  "regular-feed":{title:"Regular feed",phase:"p1",desc:"YouTube's familiar feed. Uses YouTube's native nav (Home, Shorts, +, Subscriptions, You). All / Following / Trending chip filters at top.",imgs:[{src:"refular-toggle-YT-view.png",cap:"Regular feed — native YouTube nav active, smart suggestion banner visible"},{src:"Trail_Home_Screen.png",cap:"Phase 1 Figma wireframe — Regular feed concept"}]},
+  "trail-feed":{title:"Trail feed",phase:"p1",desc:"Topic-focused feed. Trail pills at top, focus ratio shown inline. Park and + Trail pill buttons on every video card.",imgs:[{src:"trailFeed-toggle-on-home.png",cap:"Trail Feed — Web Dev active, React 34% ↔ Node.js 66%, Park + Trail on card"},{src:"trail-pills-tool-tip.png",cap:"Trail pill tooltip — 'User-created trail for Science content'"},{src:"park-video-control-tooltip.png",cap:"Park button tooltip — 'Park for later'"},{src:"Trail_Home_Screen__1_.png",cap:"Phase 1 Figma wireframe — Trail feed with slider concept"}]},
+  "smart-suggest":{title:"Smart suggestion",phase:"p2",desc:"Contextual banner in Regular feed. Detects 7+ videos on same topic and surfaces a 'Create Trail?' prompt inline above the feed.",note:"The CTA 'Create Trail' is visible but the full creation flow from this banner entry point is not fully wired in the prototype.",imgs:[{src:"refular-toggle-YT-view.png",cap:"Smart suggestion banner — 'You've watched 7+ Yoga videos. Want to organize into a Trail?' with Dismiss and Create Trail"}]},
+  "content-slider":{title:"Content balance slider",phase:"flip",desc:"Phase 1: single plain→curated axis. Phase 2: dual-topic balance with named topics and live percentage readout. Collapsible — always visible as ratio in header.",imgs:[{src:"1_content-focus-slider.png",cap:"Collapsed — focus ratio shown in header bar (React 34% ↔ Node.js 66%)"},{src:"2_1_content-focus-slider.png",cap:"Content Balance panel expanded over feed — two topic bubbles + slider"},{src:"Trail_Customization.png",cap:"Phase 1 Figma wireframe — Trail Customisation with single-axis slider"},{src:"onboarding-content-focus-slider.png",cap:"Content Focus Slider onboarding card — 'Prevents fatigue from too much of one thing'"}]},
+  "topic-selector":{title:"Topic selector modal",phase:"p2",desc:"Full modal triggered by tapping a topic bubble in Content Balance. Main topic (radio, one only) + meta tags (checkboxes, multiple) + Topic Connections panel + live selection readout.",imgs:[{src:"3_content-focus-slider.png",cap:"Topic selector — main topic radio list, Classical Physics selected"},{src:"4_content-focus-slider.png",cap:"Meta tags selected (Laws, Concepts, Papers) + Topic Connections panel + current selection readout"},{src:"2_2_content-focus-slider.png",cap:"Topic bubble in feed before tap — 'Tap to select'"}]},
+  "my-trails":{title:"My trails list",phase:"p1",desc:"Shows all trails you follow or created. Two tabs: Following / Created. Phase 1 had a simpler trail list — Cursor expanded to rich cards.",imgs:[{src:"Trails-tab.png",cap:"Trails tab — Following selected, Created tab visible"},{src:"myTrail-following-myCreatedTrails-access-tab.png",cap:"'Your own Trails' tooltip visible, trail cards below"}]},
+  "trail-cards":{title:"Rich trail cards",phase:"p2",desc:"Added in Cursor. Each card shows: color-coded cover, creator + Verified badge, video count, follower count, total duration, topic tag pills, focus ratio chip, difficulty level.",imgs:[{src:"myTrail-following-myCreatedTrails-access-tab.png",cap:"Quantum Physics Explained — Classical Physics 90% ↔ 10% Quantum Computing, Advanced, 1,247 followers"}]},
+  "trail-details":{title:"Trail details hub",phase:"p1",desc:"Full-screen destination inside each trail. Header shows title, creator, description, followers / videos / focus%, Following button, bell, share.",imgs:[{src:"trail-details-allVideos-tab.png",cap:"Trail Details header — 1,247 Followers, 12 Videos, 90% Focus, Following button"},{src:"onboarding-Trail_details.png",cap:"Trail Details onboarding card — 'Not just a playlist'"}]},
+  "videos-tab":{title:"Videos tab",phase:"p1",desc:"Lists all videos in the trail. Each entry shows thumbnail, topic tag pills (Quantum / Physics / Science), channel name, view count.",imgs:[{src:"trail-details-allVideos-tab.png",cap:"Videos tab — 12 videos, Quantum Entanglement Explained Simply with Physics/Quantum/Science tags"}]},
+  "tags-tab":{title:"Tags tab",phase:"p2",desc:"Shows all keyword pills assigned to the trail — Physics, Quantum, Science. 'Keywords' tooltip on hover.",imgs:[{src:"trail-details-tags-tab.png",cap:"Tags tab — Physics, Quantum, Science pills with Keywords tooltip visible"}]},
+  "notes-tab":{title:"Notes tab",phase:"p2",desc:"Trail overview, prerequisites, and what you'll learn — pre-populated by the trail creator. Plus a personal notes input field at the bottom.",note:"The notes input field renders correctly but saving notes is not fully wired in this prototype version.",imgs:[{src:"trail-details-notes-tab.png",cap:"Notes tab — Trail Overview, Prerequisites (basic physics, math notation), What You'll Learn (wave-particle duality, entanglement...), personal notes input"},{src:"onboarding-notes-summaries.png",cap:"Notes & Summaries onboarding card — 'Make YouTube interactive'"}]},
+  "path-tab":{title:"Path tab",phase:"p2",desc:"Visual learning timeline. Progress bar shows completion (2/4 = 50%). Vertical timeline: green filled dots for watched (with date), grey for unwatched ('Up next'). 'Keep going!' banner at bottom.",imgs:[{src:"trail-details-Path-tab.png",cap:"Path tab — Classical Physics Review ✓ (2025-08-25), Intro to QM ✓ (2025-09-01), Wave-Particle Duality (Up next), Quantum Entanglement (Up next). 50% complete."},{src:"onboarding-trail-path.png",cap:"Trail Path onboarding card — 'Better than YouTube history: organized by topic with keywords and tags'"}]},
+  "create-form":{title:"Create trail form",phase:"p2",desc:"Full-screen form. Required: Trail Name, Description, Topic (Technology/Science/Cooking/Education chips). Optional: Content Focus two-topic VS layout.",imgs:[{src:"create-trail-center-tab.png",cap:"Create Trail — name input, description textarea, topic chip selection, content focus setup"}]},
+  "focus-setup":{title:"Focus setup in create",phase:"p2",desc:"Inside Create Trail — two topic slots with VS between them. Once both selected, focus balance slider appears with live % readout.",imgs:[{src:"create-trail-center-tab.png",cap:"Content Focus section — 'Choose two topics to blend in your trail', Select Topic VS Select Topic"},{src:"create-trail-confirmation.png",cap:"After creation — Node.js 70% ↔ JavaScript 30% confirmed in trail summary"}]},
+  "collab":{title:"Collaborative playlists",phase:"concept",desc:"3 complete screens built entirely from HCI social interaction design theory — no survey or tree test data drove this feature.",note:"Open questions: creator consent to having their videos curated, email-based invite model, platform trust. None tested with users.",imgs:[{src:"your_collaborative_Playlist.png",cap:"Your Collaborative Playlist Collection — Easy Vegan Cooking recipes (list curator: You), Research writing lectures"},{src:"Create_collaborative_playlist.png",cap:"Create Collaborative Playlist — title, invite collaborators by email, add description"},{src:"Collaborative_list_shared_with_you.png",cap:"Playlists shared with you — curated by Mom, Professor Konow, Allana with collaborator avatars"},{src:"craeteNCurateFlow02.png",cap:"Phase 1 Figma — create & curate flow wireframe"},{src:"shareNCollaboarteFlow03.png",cap:"Phase 1 Figma — share & collaborate flow wireframe"}]},
+  "parked-stats":{title:"Stats header",phase:"p2",desc:"Blue stats bar at top of Parked Videos. Shows three live counts: To Watch, Total Time (minutes), Watched.",imgs:[{src:"parked-tab.png",cap:"Parked Videos — stats bar: 2 To Watch / 42m Total Time / 1 Watched"}]},
+  "parked-towatch":{title:"To Watch tab",phase:"flip",desc:"Active queue of parked videos. Each card shows thumbnail, title, channel, a note field (pre-filled by user), Add to Trail button, Watch button.",imgs:[{src:"parked-tab.png",cap:"To Watch (2) — Advanced React Patterns (note: 'compound components'), Understanding Quantum Entanglement (note: 'EPR paradox')"},{src:"addingVideoFlow01.png",cap:"Phase 1 Figma — adding a video to a trail via context menu"}]},
+  "parked-watched":{title:"Watched tab",phase:"p2",desc:"Shows videos already watched from the parked queue — separate from the active To Watch list.",imgs:[{src:"parked-tab.png",cap:"Parked Videos — toggle between To Watch (2) and Watched (1) tabs visible"}]},
+  "profile":{title:"Profile & Settings",phase:"p2",desc:"My Trails Summary (5 trails), Notification Settings toggle, Default Focus Ratio (70%), Parked Videos count, Privacy & Data, Onboarding choice, Complete Guide, Feedback, Log Out.",imgs:[{src:"user-profile-tab.png",cap:"Profile & Settings — full settings list with highlighted Onboarding and Complete Guide entries"}]},
+  "onboarding-hub":{title:"Onboarding hub",phase:"p2",desc:"Lets users choose how to learn about features — upfront or contextual. Entry point from Profile to the Complete Guide.",imgs:[{src:"user-profile-tab.png",cap:"Onboarding entry in Profile — 'Choose how you want to learn about features'"},{src:"onboarding1.png",cap:"Welcome card — first screen shown on first launch"}]},
+  "complete-guide":{title:"Complete guide",phase:"p2",desc:"All 10 features in a scrollable reference guide accessible anytime from Profile. Same content as the 8 onboarding cards but always available — not triggered by first use.",imgs:[{src:"onboarding1.png",cap:"1 / Welcome — 'Transform passive watching into structured learning'"},{src:"onboarding-feed-toggle.png",cap:"2 / Feed Toggle — Regular Feed vs Trail Feed explained"},{src:"onboarding-content-focus-slider.png",cap:"3 / Content Focus Slider — dual-topic balance, prevents fatigue"},{src:"onboarding-Trail_details.png",cap:"4 / Trail Details — 'Not just a playlist', includes notes, path, community"},{src:"onboarding-park-videos.png",cap:"5 / Parked Videos — smarter Watch Later, assign to trails"},{src:"onboarding-trail-path.png",cap:"6 / Trail Path — learning journey visualized as timeline"},{src:"onboarding-follow-trails-community.png",cap:"7 / Follow Trails & Community — topic-centric, not creator-centric"},{src:"onboarding-notes-summaries.png",cap:"8 / Notes & Summaries — personal annotations, Google Keep / Notion integrations noted"}]},
+  "modal-onboarding":{title:"Onboarding cards (modal overlay)",phase:"p2",desc:"8 cards triggered contextually — appear on first use of each feature. Shifted from upfront onboarding (v3) to contextual triggers (v5). Each has a 'Got it!' dismiss button.",imgs:[{src:"onboarding1.png",cap:"Welcome card"},{src:"onboarding-feed-toggle.png",cap:"Feed Toggle card — appears first time user touches the toggle"},{src:"onboarding-content-focus-slider.png",cap:"Content Focus Slider card"},{src:"onboarding-park-videos.png",cap:"Parked Videos card"}]},
+  "modal-balance":{title:"Content balance panel",phase:"p2",desc:"Tap focus ratio in header → panel slides over feed. Two circular topic bubbles, slider, live % label, and a description of the current blend.",imgs:[{src:"1_content-focus-slider.png",cap:"Collapsed state — ratio visible in header (Classical Physics 34% ↔ 66% Quantum Computing)"},{src:"2_1_content-focus-slider.png",cap:"Expanded Content Balance panel — two bubbles, slider, 'Balanced mix' description"}]},
+  "modal-topics":{title:"Topic selector (modal)",phase:"p2",desc:"Full modal from tapping a topic bubble. Search field, main topic radio (one only), meta tags checkboxes (multiple), Topic Connections panel, live Current Selection at bottom.",imgs:[{src:"3_content-focus-slider.png",cap:"Main Topic list — Classical Physics selected (blue)"},{src:"4_content-focus-slider.png",cap:"Meta tags checked (Laws, Concepts, Papers) + Topic Connections + Current Selection: Relativity + 3 meta tags"}]},
+  "modal-suggest-cta":{title:"Create trail CTA (partial)",phase:"partial",desc:"The Dismiss / Create Trail buttons on the smart suggestion banner. Banner renders correctly in Regular feed.",note:"Partial: tapping 'Create Trail' from this banner does not open the full trail creation flow. The banner itself is complete.",imgs:[{src:"refular-toggle-YT-view.png",cap:"Regular Feed — smart suggestion banner with Dismiss and Create Trail buttons visible above feed"}]}
+};
+
+const PHASE_META={
+  p1:{label:"Phase 1 — researched & tested",bg:"#E1F5EE",color:"#085041"},
+  p2:{label:"Phase 2 — added in Cursor",bg:"#EEEDFE",color:"#3C3489"},
+  flip:{label:"Evolved / decision flipped",bg:"#FAEEDA",color:"#633806"},
+  concept:{label:"Concept only — no user data",bg:"#FAECE7",color:"#712B13"},
+  partial:{label:"Partial / UI only",bg:"#F5F4F0",color:"#5F5E5A"}
+};
+
+let selected=null;
+
+function selectNode(id){
+  if(selected){const p=document.querySelector(`[data-id="${selected}"]`);if(p)p.classList.remove('selected');}
+  selected=id;
+  const el=document.querySelector(`[data-id="${id}"]`);
+  if(el)el.classList.add('selected');
+
+  const data=NODES[id]; if(!data)return;
+  const meta=PHASE_META[data.phase]||PHASE_META.p2;
+
+  document.getElementById('emptyState').style.display='none';
+  const hdr=document.getElementById('previewHeader');
+  hdr.style.display='block';
+  document.getElementById('phaseBadge').textContent=meta.label;
+  document.getElementById('phaseBadge').style.cssText=`background:${meta.bg};color:${meta.color}`;
+  document.getElementById('previewTitle').textContent=data.title;
+  document.getElementById('previewDesc').textContent=data.desc;
+
+  const body=document.getElementById('previewBody');
+  body.style.display='';
+  body.innerHTML='';
+
+  body.className='preview-body';
+
+  if(data.note){
+    const nb=document.createElement('div');
+    nb.className='note-box';
+    nb.textContent='⚠ '+data.note;
+    body.appendChild(nb);
+  }
+
+  const imgCount=(data.imgs||[]).length;
+  if(imgCount>0){
+    data.imgs.forEach(img=>{
+      const card=document.createElement('div');
+      card.className='img-card';
+      const i=document.createElement('img');
+      i.src=img.src; i.alt=img.cap;
+      i.onerror=()=>{card.style.display='none';};
+      const cap=document.createElement('div');
+      cap.className='img-caption';
+      cap.textContent=img.cap;
+      card.appendChild(i);card.appendChild(cap);
+      body.appendChild(card);
+    });
+  } else {
+    const ni=document.createElement('div');
+    ni.className='no-img';
+    ni.textContent='No screenshot mapped for this node.';
+    body.appendChild(ni);
+  }
+}
+
+function setFilter(f,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.node-g').forEach(n=>{
+    const p=n.getAttribute('data-phase');
+    let show=true;
+    if(f==='p1') show=p==='p1';
+    if(f==='p2') show=['p2','flip','concept','partial'].includes(p);
+    if(f==='untested') show=['p2','concept','partial'].includes(p);
+    n.classList.toggle('dimmed',!show);
+  });
+}
+
+// ── DRAG-TO-RESIZE ──────────────────────────────────────────
+(function(){
+  const divider=document.getElementById('divider');
+  const left=document.getElementById('leftPanel');
+  const layout=document.getElementById('layout');
+  let dragging=false,startX=0,startW=0;
+
+  divider.addEventListener('mousedown',e=>{
+    dragging=true; startX=e.clientX;
+    startW=left.getBoundingClientRect().width;
+    divider.classList.add('dragging');
+    document.body.style.cursor='col-resize';
+    document.body.style.userSelect='none';
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const totalW=layout.getBoundingClientRect().width;
+    const newW=Math.max(320,Math.min(totalW-260,startW+(e.clientX-startX)));
+    left.style.width=newW+'px';
+  });
+  document.addEventListener('mouseup',()=>{
+    dragging=false;
+    divider.classList.remove('dragging');
+    document.body.style.cursor='';
+    document.body.style.userSelect='';
+  });
+})();
+</script>
+</body>
+</html>
