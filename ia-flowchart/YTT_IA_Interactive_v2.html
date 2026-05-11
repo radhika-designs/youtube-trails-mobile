@@ -275,48 +275,82 @@ svg { display: block; width: 100%; height: auto; min-width: 0; }
 }
 
 /* ═══════════════════════════
-   MOBILE (≤640px) — full vertical stack
-   SVG scales via viewBox, no horizontal scroll
+   MOBILE (≤640px)
+   — top panel: fit-content height, horizontal scroll for SVG at natural size
+   — bottom panel: fills rest of viewport, scrolls internally
+   — NO page-level scroll (body stays overflow:hidden)
 ═══════════════════════════ */
 @media (max-width: 640px) {
-  html, body { height: auto; overflow: auto; }
+  /* keep body locked — no page scroll */
+  html, body { height: 100%; overflow: hidden; }
 
   .layout {
     flex-direction: column;
-    height: auto;
-    overflow: visible;
+    height: 100vh;
+    overflow: hidden;
   }
 
+  /* LEFT = top panel: shrinks to fit its content, never grows */
   .left {
     width: 100% !important;
-    overflow-x: hidden;
-    overflow-y: visible;
-    height: auto;
+    flex-shrink: 0;       /* don't compress — take what it needs */
+    height: auto;         /* height = content */
+    max-height: 55vh;     /* cap so chart doesn't eat the whole screen */
+    overflow-x: auto;     /* horizontal scroll for SVG at natural width */
+    overflow-y: auto;     /* vertical scroll if controls + chart exceed cap */
     padding: 12px;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* SVG fills mobile viewport exactly */
+  /* SVG stays at natural 680px width — never scaled down
+     Scaling causes blurry pixelated text. Let it scroll instead. */
   .svg-wrap {
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: visible;
     width: 100%;
+    -webkit-overflow-scrolling: touch;
   }
   svg {
-    width: 100%;
+    width: 680px !important;  /* natural width — sharp at all resolutions */
     height: auto;
-    /* viewBox="0 0 680 1020" handles the proportional scaling */
+    display: block;
   }
 
   .divider { display: none; }
 
+  /* RIGHT = bottom panel: fills remaining space, scrolls internally */
   .right {
+    flex: 1;               /* takes all remaining height */
+    min-height: 0;         /* allow flex shrink */
     width: 100%;
     border-left: none;
     border-top: 2px solid var(--accent);
-    height: auto;
-    min-height: 80vh;
-    overflow: hidden;
+    overflow: hidden;      /* clip — inner body scrolls */
   }
-  .preview-body { max-height: calc(100vh - 100px); }
+
+  /* inner image scroll area fills panel and scrolls */
+  .preview-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    max-height: none;      /* remove any cap — fill whatever space is left */
+  }
+
+  /* images: natural pixel size, never squished
+     Let them scroll horizontally if wider than panel */
+  .img-card {
+    width: 100%;
+    max-width: 100%;
+  }
+  .img-card img {
+    width: 100%;
+    height: auto;
+    /* high-DPI sharpness */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
   .filter-subtext { display: none; }
 }
 </style>
