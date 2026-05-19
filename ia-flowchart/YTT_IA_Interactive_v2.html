@@ -107,9 +107,8 @@ body {
 
 /* ── LEGEND ── */
 .legend-block {
-  background: #fff;
+  background: #F1EFE8;
   border-radius: 8px;
-  border: 0.5px solid #D3D1C7;
   padding: 10px 12px;
 }
 .legend-label {
@@ -138,81 +137,31 @@ body {
 .filter-btn {
   font-size: 11.5px; font-weight: 500;
   padding: 6px 14px; border-radius: 99px;
-  border: 1.5px solid transparent;
+  border: none;
   background: #EDECEA;
   color: #3D3D3B;
   cursor: pointer;
   transition: background .15s, color .15s;
 }
-.filter-btn.active { color: #fff; }
-.filter-btn:hover:not(.active) { background: #DDDBD8; }
-
-/* colour-coded active states */
-.f-all.active  { background: #3D3D3B; border-color: #3D3D3B; }
-.f-p1.active   { background: #1D9E75; border-color: #1D9E75; }
-.f-p2.active   { background: #7F77DD; border-color: #7F77DD; }
-.f-untested.active { background: #D85A30; border-color: #D85A30; }
-
-/* inactive pills show a colour dot hint */
-.f-p1:not(.active)   { border-color: #1D9E75; color: #085041; background: #F0FAF6; }
-.f-p2:not(.active)   { border-color: #7F77DD; color: #3C3489; background: #F5F4FF; }
-.f-untested:not(.active) { border-color: #D85A30; color: #712B13; background: #FFF5F2; }
-.f-all:not(.active)  { border-color: #D3D1C7; color: #3D3D3B; background: #EDECEA; }
+.filter-btn.active {
+  background: #3D3D3B;
+  color: #fff;
+}
+.filter-btn:hover:not(.active) {
+  background: #DDDBD8;
+}
 
 /* ── SVG — viewBox scales to fill on desktop ── */
-.svg-wrap { overflow-x: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; position: relative; }
+.svg-wrap { overflow-x: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
 svg { display: block; width: 100%; height: auto; min-width: 0; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
 
-/* card interactions */
 .node-g { cursor: pointer; }
-.node-g:hover rect { filter: brightness(0.91); }
-/* selected: stronger border, glow matches card colour — applied via JS */
-.node-g.selected rect { stroke-width: 2.5 !important; }
+.node-g:hover rect { filter: brightness(0.92); }
+.node-g.selected rect {
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 0 6px rgba(127,119,221,.45));
+}
 .node-g.dimmed { opacity: 0.07; pointer-events: none; transition: opacity .25s; }
-
-/* ── SCRIBBLE ANNOTATIONS ── */
-.scribble-layer {
-  position: absolute;
-  top: 0; left: 0;
-  pointer-events: none;
-  width: 100%; height: 100%;
-  overflow: visible;
-}
-.scribble-line {
-  stroke: #E05A2B;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-  stroke-dasharray: 300;
-  stroke-dashoffset: 300;
-  animation: drawLine 0.6s ease forwards;
-}
-.scribble-line.delay {
-  animation-delay: 0.5s;
-}
-.scribble-head {
-  fill: #E05A2B;
-  opacity: 0;
-  animation: fadeIn 0.2s ease forwards;
-}
-.scribble-head.delay { animation-delay: 0.9s; }
-.scribble-label {
-  fill: #E05A2B;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  opacity: 0;
-  animation: fadeIn 0.3s ease forwards;
-}
-.scribble-label.delay { animation-delay: 0.4s; }
-.scribble-label.delay2 { animation-delay: 0.8s; }
-@keyframes drawLine {
-  to { stroke-dashoffset: 0; }
-}
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
 
 /* ═══════════════════════════
    RIGHT PANEL
@@ -346,27 +295,27 @@ svg { display: block; width: 100%; height: auto; min-width: 0; shape-rendering: 
 <div class="left" id="leftPanel">
   <div class="panel-title">YouTube Trails — Information Architecture</div>
 
-  <!-- LEGEND — colour key -->
-  <div class="legend-block">
-    <div class="legend-label">Card colour = design phase</div>
-    <div class="legend-items">
-      <div class="leg"><div class="leg-box" style="background:#F0FAF6;border:1.5px solid var(--p1-stroke)"></div>Phase 1 — researched &amp; user tested</div>
-      <div class="leg"><div class="leg-box" style="background:#F5F4FF;border:1.5px solid var(--p2-stroke)"></div>Phase 2 — built in Cursor, not tested</div>
-      <div class="leg"><div class="leg-box" style="background:#FFFAF0;border:1.5px solid var(--flip-stroke)"></div>Evolved / decision flipped vs Phase 1</div>
-      <div class="leg"><div class="leg-box" style="background:#FFF5F2;border:1.5px solid var(--concept-stroke)"></div>Concept only — no data behind it</div>
-      <div class="leg"><div class="leg-box" style="background:var(--partial-fill);border:1.5px dashed var(--partial-stroke)"></div>Partial — UI exists, interaction not wired</div>
+  <!-- FILTERS — first, most prominent -->
+  <div class="filter-block">
+    <div class="filter-heading">Filter nodes by design phase</div>
+    <div class="filter-subtext">Tap a button to dim everything else and focus on just those nodes</div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all',this)">Show all</button>
+      <button class="filter-btn" onclick="setFilter('p1',this)">Phase 1 only</button>
+      <button class="filter-btn" onclick="setFilter('p2',this)">Phase 2 additions</button>
+      <button class="filter-btn" onclick="setFilter('untested',this)">Never tested</button>
     </div>
   </div>
 
-  <!-- FILTER PILLS — above chart, colour-coded -->
-  <div class="filter-block" style="position:relative;">
-    <div class="filter-heading">Filter cards by design phase</div>
-    <div class="filter-subtext">Tap a button to dim everything else and focus on just those cards</div>
-    <div class="filter-row" id="filterRow" style="position:relative;">
-      <button class="filter-btn f-all active" onclick="setFilter('all',this)">Show all</button>
-      <button class="filter-btn f-p1" onclick="setFilter('p1',this)">Phase 1 only</button>
-      <button class="filter-btn f-p2" onclick="setFilter('p2',this)">Phase 2 additions</button>
-      <button class="filter-btn f-untested" onclick="setFilter('untested',this)">Never tested</button>
+  <!-- LEGEND — second, smaller -->
+  <div class="legend-block">
+    <div class="legend-label">Node colour = design phase</div>
+    <div class="legend-items">
+      <div class="leg"><div class="leg-box" style="background:var(--p1-fill);border:1.5px solid var(--p1-stroke)"></div>Phase 1 — researched &amp; user tested</div>
+      <div class="leg"><div class="leg-box" style="background:var(--p2-fill);border:1.5px solid var(--p2-stroke)"></div>Phase 2 — built in Cursor, not tested</div>
+      <div class="leg"><div class="leg-box" style="background:var(--flip-fill);border:1.5px solid var(--flip-stroke)"></div>Evolved / decision flipped vs Phase 1</div>
+      <div class="leg"><div class="leg-box" style="background:var(--concept-fill);border:1.5px solid var(--concept-stroke)"></div>Concept only — no data behind it</div>
+      <div class="leg"><div class="leg-box" style="background:var(--partial-fill);border:1.5px dashed var(--partial-stroke)"></div>Partial — UI exists, interaction not wired</div>
     </div>
   </div>
 
@@ -423,61 +372,61 @@ svg { display: block; width: 100%; height: auto; min-width: 0; shape-rendering: 
 
   <!-- NODES -->
   <g class="node-g" data-id="entry" data-phase="p1" onclick="selectNode('entry')">
-    <rect x="240" y="20" width="200" height="44" rx="7" fill="#F0FAF6" stroke="#1D9E75" stroke-width="1.5"/>
+    <rect x="240" y="20" width="200" height="44" rx="7" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
     <text x="340" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="#085041">YouTube Trails entry</text>
     <text x="340" y="54" text-anchor="middle" font-size="10" fill="#0F6E56">Toggle: Regular ↔ Trail Feed</text>
   </g>
   <g class="node-g" data-id="home" data-phase="p1" onclick="selectNode('home')">
-    <rect x="20" y="94" width="108" height="44" rx="6" fill="#F0FAF6" stroke="#1D9E75" stroke-width="1.5"/>
+    <rect x="20" y="94" width="108" height="44" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
     <text x="74" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#085041">Home</text>
     <text x="74" y="128" text-anchor="middle" font-size="10" fill="#0F6E56">Feed entry</text>
   </g>
   <g class="node-g" data-id="trails-nav" data-phase="p1" onclick="selectNode('trails-nav')">
-    <rect x="143" y="94" width="108" height="44" rx="6" fill="#F0FAF6" stroke="#1D9E75" stroke-width="1.5"/>
+    <rect x="143" y="94" width="108" height="44" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
     <text x="197" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#085041">Trails ③</text>
     <text x="197" y="128" text-anchor="middle" font-size="10" fill="#0F6E56">My trails hub</text>
   </g>
   <g class="node-g" data-id="create-nav" data-phase="p2" onclick="selectNode('create-nav')">
-    <rect x="266" y="94" width="108" height="44" rx="6" fill="#F5F4FF" stroke="#7F77DD" stroke-width="1.5"/>
+    <rect x="266" y="94" width="108" height="44" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>
     <text x="320" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#3C3489">+ Create</text>
     <text x="320" y="128" text-anchor="middle" font-size="10" fill="#534AB7">Added Cursor v2</text>
   </g>
   <g class="node-g" data-id="parked-nav" data-phase="flip" onclick="selectNode('parked-nav')">
-    <rect x="389" y="94" width="108" height="44" rx="6" fill="#FFFAF0" stroke="#EF9F27" stroke-width="1.5"/>
+    <rect x="389" y="94" width="108" height="44" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
     <text x="443" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#633806">Parked ⑥</text>
     <text x="443" y="128" text-anchor="middle" font-size="10" fill="#854F0B">Flipped: own tab</text>
   </g>
   <g class="node-g" data-id="you-nav" data-phase="p2" onclick="selectNode('you-nav')">
-    <rect x="512" y="94" width="108" height="44" rx="6" fill="#F5F4FF" stroke="#7F77DD" stroke-width="1.5"/>
+    <rect x="512" y="94" width="108" height="44" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>
     <text x="566" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#3C3489">You</text>
     <text x="566" y="128" text-anchor="middle" font-size="10" fill="#534AB7">Profile + guide</text>
   </g>
   <g class="node-g" data-id="regular-feed" data-phase="p1" onclick="selectNode('regular-feed')">
-    <rect x="20" y="162" width="108" height="56" rx="6" fill="#F0FAF6" stroke="#1D9E75" stroke-width="1"/>
+    <rect x="20" y="162" width="108" height="56" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
     <text x="74" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">Regular feed</text>
     <text x="74" y="196" text-anchor="middle" font-size="10" fill="#0F6E56">YouTube nav</text>
     <text x="74" y="208" text-anchor="middle" font-size="10" fill="#0F6E56">All/Following/Trending</text>
   </g>
   <g class="node-g" data-id="trail-feed" data-phase="p1" onclick="selectNode('trail-feed')">
-    <rect x="20" y="242" width="108" height="56" rx="6" fill="#F0FAF6" stroke="#1D9E75" stroke-width="1"/>
+    <rect x="20" y="242" width="108" height="56" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>
     <text x="74" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">Trail feed</text>
     <text x="74" y="276" text-anchor="middle" font-size="10" fill="#0F6E56">Trail pills</text>
     <text x="74" y="288" text-anchor="middle" font-size="10" fill="#0F6E56">Park + Trail on card</text>
   </g>
   <g class="node-g" data-id="smart-suggest" data-phase="p2" onclick="selectNode('smart-suggest')">
-    <rect x="20" y="322" width="108" height="56" rx="6" fill="#F5F4FF" stroke="#7F77DD" stroke-width="1"/>
+    <rect x="20" y="322" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
     <text x="74" y="342" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Smart suggestion</text>
     <text x="74" y="356" text-anchor="middle" font-size="10" fill="#534AB7">"7+ Yoga videos</text>
     <text x="74" y="368" text-anchor="middle" font-size="10" fill="#534AB7">→ create trail?"</text>
   </g>
   <g class="node-g" data-id="content-slider" data-phase="flip" onclick="selectNode('content-slider')">
-    <rect x="20" y="402" width="108" height="56" rx="6" fill="#FFFAF0" stroke="#EF9F27" stroke-width="1"/>
+    <rect x="20" y="402" width="108" height="56" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1"/>
     <text x="74" y="419" text-anchor="middle" font-size="11" font-weight="600" fill="#633806">Content balance</text>
     <text x="74" y="433" text-anchor="middle" font-size="10" fill="#854F0B">P1: single axis</text>
     <text x="74" y="447" text-anchor="middle" font-size="10" fill="#854F0B">P2: dual-topic %</text>
   </g>
   <g class="node-g" data-id="topic-selector" data-phase="p2" onclick="selectNode('topic-selector')">
-    <rect x="20" y="482" width="108" height="56" rx="6" fill="#F5F4FF" stroke="#7F77DD" stroke-width="1"/>
+    <rect x="20" y="482" width="108" height="56" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1"/>
     <text x="74" y="499" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Topic selector</text>
     <text x="74" y="513" text-anchor="middle" font-size="10" fill="#534AB7">Main topic + tags</text>
     <text x="74" y="525" text-anchor="middle" font-size="10" fill="#534AB7">Topic connections</text>
@@ -604,10 +553,8 @@ svg { display: block; width: 100%; height: auto; min-width: 0; shape-rendering: 
   <text x="340" y="840" text-anchor="middle" font-size="11" font-weight="600" fill="#2C2C2A">Phase 1 tested: 5 · Phase 2 added: 18 · Flipped: 2 · Concept only: 1 · Partial: 1</text>
   <text x="340" y="858" text-anchor="middle" font-size="10" fill="#888780">Original tree test: 7 tasks — current IA never retested with users</text>
   </svg>
-
-  <!-- SCRIBBLE ANNOTATIONS — JS draws on canvas overlay pinned to left panel -->
-  <svg id="scribbleLayer" viewBox="0 0 680 1020" style="display:none"></svg>
-</div><!-- end svg-wrap -->
+  </div>
+</div>
 
 <!-- resizable divider with explicit grip -->
 <div class="divider" id="divider">
@@ -623,9 +570,9 @@ svg { display: block; width: 100%; height: auto; min-width: 0; shape-rendering: 
 <div class="right" id="rightPanel">
   <div id="emptyState" class="empty-state">
     <div class="empty-icon">🖱</div>
-    <div class="empty-title">Click any card to see its screen</div>
-    <div class="empty-sub">Each coloured card in the flowchart links to the actual prototype or wireframe screenshot for that part of the design.</div>
-    <div class="empty-arrow">← click a card to start</div>
+    <div class="empty-title">Click any node to see its screen</div>
+    <div class="empty-sub">Each coloured box in the flowchart links to the actual prototype or wireframe screenshot for that part of the design.</div>
+    <div class="empty-arrow">← click a node to start</div>
   </div>
   <div id="previewHeader" class="preview-header" style="display:none">
     <div id="phaseBadge" class="phase-badge"></div>
@@ -682,26 +629,12 @@ const PHASE_META={
 };
 
 let selected=null;
-const glowMap={p1:'rgba(29,158,117,.55)',p2:'rgba(127,119,221,.55)',flip:'rgba(239,159,39,.55)',concept:'rgba(216,90,48,.55)',partial:'rgba(180,178,169,.4)'};
 
 function selectNode(id){
-  // clear previous
-  if(selected){
-    const p=document.querySelector(`[data-id="${selected}"]`);
-    if(p){
-      p.classList.remove('selected');
-      const pr=p.querySelector('rect');
-      if(pr) pr.style.filter='';
-    }
-  }
+  if(selected){const p=document.querySelector(`[data-id="${selected}"]`);if(p)p.classList.remove('selected');}
   selected=id;
   const el=document.querySelector(`[data-id="${id}"]`);
-  if(el){
-    el.classList.add('selected');
-    const phase=el.getAttribute('data-phase');
-    const r=el.querySelector('rect');
-    if(r) r.style.filter=`drop-shadow(0 0 8px ${glowMap[phase]||glowMap.p2})`;
-  }
+  if(el)el.classList.add('selected');
 
   const data=NODES[id]; if(!data)return;
   const meta=PHASE_META[data.phase]||PHASE_META.p2;
@@ -768,112 +701,7 @@ function setFilter(f,btn){
   });
 }
 
-// ── SCRIBBLE ANNOTATIONS ─────────────────────────────────────
-// Drawn via JS so they always point at actual DOM elements regardless of scale
-function drawScribbles(){
-  const leftPanel = document.getElementById('leftPanel');
-  const filterRow = document.getElementById('filterRow');
-  const firstCard = document.querySelector('[data-id="entry"]');
-  const secondCard = document.querySelector('[data-id="home"]');
-
-  if(!leftPanel||!filterRow||!firstCard) return;
-
-  // remove any existing canvas
-  const old = document.getElementById('scribbleCanvas');
-  if(old) old.remove();
-
-  // create a canvas that covers the entire left panel
-  const lp = leftPanel.getBoundingClientRect();
-  const canvas = document.createElement('canvas');
-  canvas.id = 'scribbleCanvas';
-  canvas.width = lp.width * window.devicePixelRatio;
-  canvas.height = lp.height * window.devicePixelRatio;
-  canvas.style.cssText = `
-    position:absolute;top:0;left:0;
-    width:${lp.width}px;height:${lp.height}px;
-    pointer-events:none;z-index:100;
-  `;
-  leftPanel.style.position = 'relative';
-  leftPanel.appendChild(canvas);
-
-  const ctx = canvas.getContext('2d');
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  ctx.strokeStyle = '#E05A2B';
-  ctx.fillStyle = '#E05A2B';
-  ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.font = '700 12px -apple-system, sans-serif';
-
-  // helper: get coords relative to left panel
-  function rel(el){
-    const r = el.getBoundingClientRect();
-    return {
-      x: r.left - lp.left, y: r.top - lp.top,
-      w: r.width, h: r.height,
-      cx: r.left - lp.left + r.width/2,
-      cy: r.top - lp.top + r.height/2
-    };
-  }
-
-  function arrow(x1,y1,x2,y2){
-    // curved bezier path with arrowhead
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    // curve control point: perpendicular offset from midpoint
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
-    // perpendicular vector, scaled by curve amount (25% of distance)
-    const curveAmt = Math.min(dist * 0.25, 30);
-    const perpX = -dy / dist * curveAmt;
-    const perpY = dx / dist * curveAmt;
-    const cx = mx + perpX;
-    const cy = my + perpY;
-
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.quadraticCurveTo(cx, cy, x2, y2);
-    ctx.stroke();
-
-    // arrowhead — angle calculated from last segment of curve
-    const tangentX = x2 - cx;
-    const tangentY = y2 - cy;
-    const angle = Math.atan2(tangentY, tangentX);
-    const hs = 9;
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - hs * Math.cos(angle - 0.45), y2 - hs * Math.sin(angle - 0.45));
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - hs * Math.cos(angle + 0.45), y2 - hs * Math.sin(angle + 0.45));
-    ctx.stroke();
-  }
-
-  const fr = rel(filterRow);
-  const fc = rel(firstCard);
-  const sc = secondCard ? rel(secondCard) : null;
-
-  // Scribble 1: "tap these to filter" → label to right, arrow points down-left at Never tested pill
-  const lastBtn = filterRow.querySelectorAll('button');
-  const lastBtnEl = lastBtn[lastBtn.length-1];
-  const lb = rel(lastBtnEl);
-  const t1x = lb.x + lb.w + 10;
-  const t1y = lb.y - 24;
-  ctx.fillText('tap these to filter', t1x, t1y);
-  arrow(t1x - 10, t1y + 4, lb.x + lb.w * 0.7, lb.y + lb.h * 0.5);
-
-  // Scribble 2: "click any card" → points at first SVG card
-  const t2x = fc.cx + 60;
-  const t2y = fc.y - 20;
-  ctx.fillText('click any card', t2x, t2y);
-  arrow(t2x + 50, t2y + 4, fc.cx + fc.w/2 - 10, fc.y + 4);
-}
-
-window.addEventListener('load', function(){
-  selectNode('trail-feed');
-  setTimeout(drawScribbles, 400);
-});
-window.addEventListener('resize', function(){ setTimeout(drawScribbles,100); });
+// ── DRAG-TO-RESIZE ──────────────────────────────────────────
 (function(){
   const divider=document.getElementById('divider');
   const left=document.getElementById('leftPanel');
