@@ -104,6 +104,48 @@
             z-index: 50; /* Lower than toggle bar and chips to not cover tooltips */
         }
 
+        /* Merged feed switch — two 44x44 icon tiles in one rectangular toggle */
+        .feed-switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px;
+            background: var(--md-surface-container);
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .feed-switch-tile {
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--md-surface-container-highest);
+            color: var(--md-on-surface-variant);
+            border: 1px solid transparent;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .feed-switch-tile .material-icons { font-size: 24px; color: inherit; }
+        .feed-switch-tile svg { width: 22px; height: 16px; }
+
+        .feed-switch-tile.yt.active {
+            background: var(--yt-red);
+            color: #FFFFFF;
+            border-color: #FF5A5A;
+            box-shadow: 0 0 0 2px rgba(255,40,40,0.35);
+        }
+
+        .feed-switch-tile.trail.active {
+            background: var(--yt-blue);
+            color: #FFFFFF;
+            border-color: #8FCBFF;
+            box-shadow: 0 0 0 2px rgba(62,166,255,0.40);
+        }
+
         .yt-logo {
             display: flex;
             align-items: center;
@@ -434,7 +476,7 @@
         .collapsed-value {
             font-size: 12px;
             font-weight: 500;
-            color: var(--yt-blue);
+            color: var(--md-on-surface-variant);
             white-space: nowrap;
         }
 
@@ -510,7 +552,7 @@
             appearance: none;
             width: 20px;
             height: 20px;
-            background: var(--yt-blue);
+            background: var(--md-primary);
             border: 3px solid var(--md-surface-container-high);
             border-radius: 50%;
             cursor: grab;
@@ -525,7 +567,7 @@
         .yt-slider::-moz-range-thumb {
             width: 20px;
             height: 20px;
-            background: var(--yt-blue);
+            background: var(--md-primary);
             border: 3px solid var(--md-surface-container-high);
             border-radius: 50%;
             cursor: grab;
@@ -2031,18 +2073,20 @@
 
         .tooltip-small {
             position: fixed !important; /* Use fixed for viewport-relative positioning */
-            background: var(--md-on-surface);
-            color: var(--md-surface);
+            background: var(--md-surface-container-highest);
+            color: var(--md-on-surface);
+            border: 1px solid var(--md-outline-variant);
             padding: 6px 10px;
             border-radius: var(--md-shape-xs);
-            font-size: 11px;
+            font-size: 12px;
             line-height: 16px;
+            font-weight: 400;
             white-space: nowrap;
             z-index: 280 !important; /* Lower than slider (300) but higher than chips (250) */
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: opacity 0.15s ease;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
             pointer-events: none;
             display: none;
         }
@@ -2054,7 +2098,7 @@
             left: var(--arrow-left, 50%);
             transform: translateX(-50%);
             border: 5px solid transparent;
-            border-top-color: var(--yt-text-primary);
+            border-top-color: var(--md-surface-container-highest);
         }
 
         /* Type 2: Large Feature Tooltips (centered with overlay) */
@@ -2994,16 +3038,17 @@
         }
 
         function renderHeader() {
+            const regular = !state.isTrailFeed;
             return `
                 <div class="yt-header">
-                    <div class="yt-logo">
-                        <div class="yt-logo-icon ${state.isTrailFeed ? 'trail-mode' : ''}">
-                            ${state.isTrailFeed 
-                                ? '<span class="material-icons" style="font-size: 20px; color: white;">route</span>' 
-                                : '▶'}
+                    <div class="feed-switch has-tooltip-small" onclick="toggleFeed()" role="button" aria-label="Switch between Regular and Trail feed">
+                        <div class="feed-switch-tile yt ${regular ? 'active' : ''}">
+                            <svg viewBox="0 0 22 16" aria-hidden="true"><path d="M8 4 L16 8 L8 12 Z" fill="currentColor"/></svg>
                         </div>
-                        <span class="yt-logo-text">YouTube</span>
-                        <span class="yt-logo-trails">Trails</span>
+                        <div class="feed-switch-tile trail ${regular ? '' : 'active'}">
+                            <span class="material-icons">route</span>
+                        </div>
+                        <div class="tooltip-small">${regular ? 'Regular feed' : 'Trail feed'}</div>
                     </div>
                     <div class="yt-header-actions">
                         <button class="yt-icon-btn">
@@ -3021,25 +3066,19 @@
         }
 
         function renderTrailToggleBar() {
+            // Toggle moved into the header; this row now only carries the slider in Trail feed.
+            if (!state.isTrailFeed) return '';
             return `
                 <div class="trail-toggle-bar">
-                    <div class="toggle-group has-tooltip-small">
-                        <span class="toggle-label ${!state.isTrailFeed ? 'active' : ''}">Regular</span>
-                        <div class="yt-toggle ${state.isTrailFeed ? 'active' : ''}" onclick="toggleFeed()">
-                            <div class="yt-toggle-thumb"></div>
-                        </div>
-                        <span class="toggle-label ${state.isTrailFeed ? 'active' : ''}">Trail Feed</span>
-                        <div class="tooltip-small">🌐 Switch feed mode</div>
-                    </div>
-                    ${state.isTrailFeed ? renderInlineSlider() : ''}
+                    ${renderInlineSlider()}
                 </div>
             `;
         }
 
         function renderInlineSlider() {
-            const trail = mockTrails.find(t => t.name === state.activeTrail);
-            const trailColor = trail ? trail.color : '#667eea';
-            
+            // Slider uses a single consistent brand accent (md-primary), not the per-trail color.
+            const trailColor = '#FF4E45';
+
             const leftPercent = state.focusRatio;
             const rightPercent = 100 - state.focusRatio;
             
@@ -3056,7 +3095,7 @@
                             <span class="collapsed-value" style="font-size: 11px; color: var(--yt-text-secondary);">↔</span>
                             <span class="collapsed-label" style="font-size: 11px;">${rightPercent}% ${rightTopic}</span>
                         </div>
-                        <div class="tooltip-small">🎚️ Tap to adjust mix</div>
+                        <div class="tooltip-small">Tap to adjust mix</div>
                     </div>
                 `;
             }
@@ -3135,7 +3174,7 @@
                             <button class="yt-chip has-tooltip-small ${state.activeTrail === chip.id ? 'active' : ''}" 
                                     onclick="selectTrail('${chip.id}')">
                                 ${chip.label}
-                                <div class="tooltip-small">📚 User-created trail for ${chip.label} content</div>
+                                <div class="tooltip-small">User-created trail for ${chip.label} content</div>
                             </button>
                         `).join('')}
                     </div>
@@ -3389,7 +3428,7 @@
                             <button class="yt-action-btn has-tooltip-small" onclick="showAddToTrailModal('${video.id}')">
                                 <span class="material-icons">add_circle_outline</span>
                                 Trail
-                                <div class="tooltip-small">➕ Add to Trail</div>
+                                <div class="tooltip-small">Add to Trail</div>
                             </button>
                         </div>
                     </div>
@@ -3411,12 +3450,12 @@
                     <button class="yt-chip has-tooltip-small ${state.myTrailsTab === 'following' ? 'active' : ''}" 
                             onclick="changeMyTrailsTab('following')">
                         Following
-                        <div class="tooltip-small">👥 Trails from community</div>
+                        <div class="tooltip-small">Trails from community</div>
                     </button>
                     <button class="yt-chip has-tooltip-small ${state.myTrailsTab === 'created' ? 'active' : ''}" 
                             onclick="changeMyTrailsTab('created')">
                         Created
-                        <div class="tooltip-small">✨ Your own Trails</div>
+                        <div class="tooltip-small">Your own Trails</div>
                     </button>
                 </div>
                 
@@ -3588,22 +3627,22 @@
                         <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'videos' ? 'active' : ''}" 
                                 onclick="changeTrailDetailTab('videos')">
                             Videos
-                            <div class="tooltip-small">🎥 All videos</div>
+                            <div class="tooltip-small">All videos</div>
                         </button>
                         <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'tags' ? 'active' : ''}" 
                                 onclick="changeTrailDetailTab('tags')">
                             Tags
-                            <div class="tooltip-small">🏷️ Keywords</div>
+                            <div class="tooltip-small">Keywords</div>
                         </button>
                         <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'notes' ? 'active' : ''}" 
                                 onclick="changeTrailDetailTab('notes')">
                             Notes
-                            <div class="tooltip-small">📝 Annotations</div>
+                            <div class="tooltip-small">Annotations</div>
                         </button>
                         <button class="detail-tab has-tooltip-small ${state.trailDetailTab === 'path' ? 'active' : ''}" 
                                 onclick="changeTrailDetailTab('path')">
                             Path
-                            <div class="tooltip-small">🧭 Journey</div>
+                            <div class="tooltip-small">Journey</div>
                         </button>
                     </div>
 
@@ -3795,12 +3834,12 @@
                     <button class="yt-chip has-tooltip-small ${state.parkedTab === 'towatch' ? 'active' : ''}" 
                             onclick="changeParkedTab('towatch')">
                         To Watch (${toWatch.length})
-                        <div class="tooltip-small">⏱️ Parked for later</div>
+                        <div class="tooltip-small">Parked for later</div>
                     </button>
                     <button class="yt-chip has-tooltip-small ${state.parkedTab === 'watched' ? 'active' : ''}" 
                             onclick="changeParkedTab('watched')">
                         Watched (${watched.length})
-                        <div class="tooltip-small">✅ Already watched</div>
+                        <div class="tooltip-small">Already watched</div>
                     </button>
                 </div>
 
@@ -4221,22 +4260,22 @@
             
             // YouTube's original bottom navigation for Regular Feed
             const youtubeNavItems = [
-                { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: '🏠 Home Feed - Browse videos' },
-                { id: 'shorts', screen: 'shorts', icon: 'video_library', label: 'Shorts', tooltip: '📱 Shorts - Quick videos' },
-                { id: 'create', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: '➕ Create content' },
-                { id: 'subscriptions', screen: 'subscriptions', icon: 'subscriptions', label: 'Subscriptions', tooltip: '📺 Subscriptions - Following channels' },
-                { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: '👤 Profile & Settings' },
+                { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: 'Home' },
+                { id: 'shorts', screen: 'shorts', icon: 'video_library', label: 'Shorts', tooltip: 'Shorts' },
+                { id: 'create', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: 'Create' },
+                { id: 'subscriptions', screen: 'subscriptions', icon: 'subscriptions', label: 'Subscriptions', tooltip: 'Subscriptions' },
+                { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: 'You' },
             ];
-            
+
             // Current Trail navigation for Trail Feed
             const trailNavItems = [
-                { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: '🏠 Home Feed - Browse videos' },
-                { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails', tooltip: '🗺️ My Trails - Following & Created', badge: trailsCount > 0 ? trailsCount : null },
-                { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: '➕ Create new Trail' },
-                { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked', tooltip: '📑 Parked Videos - Watch Later', badge: parkedCount > 0 ? parkedCount : null },
-                { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: '👤 Profile & Settings' },
+                { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: 'Home' },
+                { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails', tooltip: 'My Trails', badge: trailsCount > 0 ? trailsCount : null },
+                { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: 'Create Trail' },
+                { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked', tooltip: 'Parked', badge: parkedCount > 0 ? parkedCount : null },
+                { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: 'You' },
             ];
-            
+
             // Choose navigation based on current feed
             const navItems = state.isTrailFeed ? trailNavItems : youtubeNavItems;
 
@@ -4346,21 +4385,26 @@
         function toggleMetaTag(side, tag) {
             if (side === 'left') {
                 const index = state.selectedMetaTagsLeft.indexOf(tag);
-                if (index > -1) {
-                    state.selectedMetaTagsLeft.splice(index, 1);
-                } else {
-                    state.selectedMetaTagsLeft.push(tag);
-                }
+                if (index > -1) state.selectedMetaTagsLeft.splice(index, 1);
+                else state.selectedMetaTagsLeft.push(tag);
             } else {
                 const index = state.selectedMetaTagsRight.indexOf(tag);
-                if (index > -1) {
-                    state.selectedMetaTagsRight.splice(index, 1);
-                } else {
-                    state.selectedMetaTagsRight.push(tag);
-                }
+                if (index > -1) state.selectedMetaTagsRight.splice(index, 1);
+                else state.selectedMetaTagsRight.push(tag);
             }
+            // #3: the first selected tag becomes that side's topic on the slider.
+            syncSideTopic(side);
             // Refresh suggestions + selected chips only (input keeps focus)
             refreshTopicSheet(side);
+        }
+
+        // Derive the slider side's main topic from its selected tags (first tag wins; default if none).
+        function syncSideTopic(side) {
+            const tags = side === 'left' ? state.selectedMetaTagsLeft : state.selectedMetaTagsRight;
+            const fallback = topicMaps[state.activeTrail][side].mainTopics[0];
+            const topic = tags.length ? tags[0] : fallback;
+            if (side === 'left') state.selectedMainTopicLeft = topic;
+            else state.selectedMainTopicRight = topic;
         }
 
         function updateSearch(side, query) {
@@ -4391,8 +4435,7 @@
         function updateFocusLive(value) {
             state.focusRatio = parseInt(value);
             const lp = state.focusRatio, rp = 100 - lp;
-            const trail = mockTrails.find(t => t.name === state.activeTrail);
-            const c = trail ? trail.color : '#667eea';
+            const c = '#FF4E45'; // consistent slider accent (md-primary)
             const lt = state.selectedMainTopicLeft, rt = state.selectedMainTopicRight;
 
             const inp = document.querySelector('.yt-slider');
