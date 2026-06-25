@@ -297,10 +297,10 @@
 
         .create-trail-btn {
             padding: 8px 16px;
-            background: var(--yt-blue);
-            color: white;
+            background: var(--md-primary);
+            color: var(--md-on-primary);
             border: none;
-            border-radius: 18px;
+            border-radius: var(--md-shape-full);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -311,7 +311,7 @@
         }
 
         .create-trail-btn:hover {
-            background: #0556c4;
+            opacity: 0.92;
         }
 
         /* Chips Bar - Sticky */
@@ -333,18 +333,18 @@
             display: none;
         }
 
-        /* M3 Expressive filter chips */
+        /* YouTube-style filter chips — borderless solid fill, selected = light pill */
         .yt-chip {
-            padding: 7px 14px;
+            padding: 8px 12px;
             background: var(--md-surface-container-high);
-            border: 1px solid var(--md-outline-variant);
+            border: none;
             border-radius: var(--md-shape-xs);
             font-size: 14px;
             font-weight: 500;
             color: var(--md-on-surface);
             cursor: pointer;
             white-space: nowrap;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            transition: background 0.2s, color 0.2s;
             position: relative; /* For tooltip positioning */
         }
 
@@ -355,7 +355,6 @@
         .yt-chip.active {
             background: var(--md-on-surface);
             color: var(--md-surface);
-            border-color: var(--md-on-surface);
         }
 
         /* Content */
@@ -729,15 +728,15 @@
             align-items: center;
             gap: 4px;
             padding: 8px 14px;
-            border-radius: var(--md-shape-full);
-            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--md-shape-xs);
+            border: none;
             background: var(--md-surface-container-highest);
             color: var(--md-on-surface);
             font-size: 13px;
             font-weight: 500;
             font-family: 'Roboto', sans-serif;
             cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
+            transition: background 0.15s;
         }
 
         .topic-chip:hover { background: var(--md-state-hover); }
@@ -745,8 +744,7 @@
         .topic-chip .material-icons { font-size: 16px; color: var(--md-on-surface-variant); }
 
         .topic-chip.is-selected {
-            background: rgba(62,166,255,0.18);
-            border-color: var(--yt-blue);
+            background: rgba(62,166,255,0.20);
             color: var(--yt-blue);
         }
         .topic-chip.is-selected .material-icons { font-size: 15px; color: var(--yt-blue); }
@@ -1263,14 +1261,15 @@
 
         /* Bottom Nav */
         /* M3 Navigation Bar */
+        /* YouTube-style bottom nav — no M3 pill, slim, active = white icon + label */
         .yt-bottom-nav {
-            height: 72px;
+            height: 56px;
             display: flex;
-            background: var(--md-surface-container);
+            background: var(--md-surface);
             position: relative; /* Create positioning context */
             overflow: visible; /* Allow tooltips to show above */
             z-index: 300; /* High z-index to ensure tooltips show above all content */
-            padding: 8px 0 12px;
+            padding: 0;
         }
 
         .yt-nav-item {
@@ -1278,7 +1277,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             gap: 4px;
             cursor: pointer;
             color: var(--md-on-surface-variant);
@@ -1287,34 +1286,22 @@
             position: relative; /* For tooltip positioning */
         }
 
-        /* Active pill indicator behind the icon */
         .yt-nav-item .material-icons {
             font-size: 24px;
             color: inherit;
-            width: 56px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--md-shape-full);
-            transition: background 0.2s, color 0.2s;
+            transition: color 0.15s;
         }
 
         .yt-nav-item.active {
             color: var(--md-on-surface);
         }
 
-        .yt-nav-item.active .material-icons {
-            background: var(--md-secondary-container);
-            color: var(--md-on-secondary-container);
-        }
-
-        .yt-nav-item:active .material-icons {
-            background: var(--md-state-press);
-        }
-
         .yt-nav-label {
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: 400;
+        }
+
+        .yt-nav-item.active .yt-nav-label {
             font-weight: 500;
         }
 
@@ -1625,10 +1612,10 @@
         }
 
         .empty-state-action {
-            background: var(--yt-blue);
-            color: white;
+            background: var(--md-primary);
+            color: var(--md-on-primary);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--md-shape-full);
             padding: 12px 20px;
             font-size: 14px;
             font-weight: 500;
@@ -1645,17 +1632,17 @@
         /* Fixed Submit Button */
         .fixed-submit {
             padding: 16px;
-            background: var(--yt-white);
-            border-top: 1px solid var(--yt-divider);
+            background: var(--md-surface);
+            border-top: 1px solid var(--md-outline-variant);
         }
 
         .btn-submit {
             width: 100%;
             padding: 12px;
-            background: var(--yt-blue);
-            color: white;
+            background: var(--md-primary);
+            color: var(--md-on-primary);
             border: none;
-            border-radius: 18px;
+            border-radius: var(--md-shape-full);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -1786,8 +1773,8 @@
         }
 
         .onboarding-btn-primary {
-            background: var(--yt-blue);
-            color: white;
+            background: var(--md-primary);
+            color: var(--md-on-primary);
         }
 
         .onboarding-btn-secondary {
