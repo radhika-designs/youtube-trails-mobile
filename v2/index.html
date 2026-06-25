@@ -66,6 +66,83 @@
             --yt-overlay: #000000cc;
         }
 
+        /* ===== Feed-aware themes: theme (dark/light) x feed (regular/trail) ===== */
+        /* Dark · Regular — near-black dark red */
+        .app.theme-dark.feed-regular {
+            --md-surface: #160B0B;
+            --md-surface-dim: #0E0707;
+            --md-surface-container-lowest: #0E0707;
+            --md-surface-container-low: #1E1212;
+            --md-surface-container: #241616;
+            --md-surface-container-high: #2C1B1B;
+            --md-surface-container-highest: #341F1F;
+            --md-on-surface: #F1F1F1;
+            --md-on-surface-variant: #B59A9A;
+            --md-outline: #6B5151;
+            --md-outline-variant: #3A2626;
+            --md-secondary-container: #341F1F;
+            --md-on-secondary-container: #F1F1F1;
+            --md-state-hover: rgba(255,255,255,0.08);
+            --md-state-press: rgba(255,255,255,0.12);
+        }
+
+        /* Dark · Trail — near-black navy */
+        .app.theme-dark.feed-trail {
+            --md-surface: #0B0F1A;
+            --md-surface-dim: #07090F;
+            --md-surface-container-lowest: #07090F;
+            --md-surface-container-low: #121826;
+            --md-surface-container: #161D2C;
+            --md-surface-container-high: #1C2433;
+            --md-surface-container-highest: #222B3C;
+            --md-on-surface: #F1F1F1;
+            --md-on-surface-variant: #9AA6BE;
+            --md-outline: #51607B;
+            --md-outline-variant: #26303F;
+            --md-secondary-container: #222B3C;
+            --md-on-secondary-container: #F1F1F1;
+            --md-state-hover: rgba(255,255,255,0.08);
+            --md-state-press: rgba(255,255,255,0.12);
+        }
+
+        /* Light · Regular — whisper of warm red */
+        .app.theme-light.feed-regular {
+            --md-surface: #FFF6F5;
+            --md-surface-dim: #F5E8E6;
+            --md-surface-container-lowest: #FFFFFF;
+            --md-surface-container-low: #FBEEEC;
+            --md-surface-container: #F9E8E6;
+            --md-surface-container-high: #F5E0DE;
+            --md-surface-container-highest: #F0D8D6;
+            --md-on-surface: #1A1212;
+            --md-on-surface-variant: #7A5A5A;
+            --md-outline: #B89A9A;
+            --md-outline-variant: #EAD3D1;
+            --md-secondary-container: #F5E0DE;
+            --md-on-secondary-container: #1A1212;
+            --md-state-hover: rgba(0,0,0,0.05);
+            --md-state-press: rgba(0,0,0,0.10);
+        }
+
+        /* Light · Trail — whisper of cool blue */
+        .app.theme-light.feed-trail {
+            --md-surface: #F4F8FF;
+            --md-surface-dim: #E6EEF8;
+            --md-surface-container-lowest: #FFFFFF;
+            --md-surface-container-low: #EAF1FB;
+            --md-surface-container: #E3ECF8;
+            --md-surface-container-high: #DBE6F5;
+            --md-surface-container-highest: #D2DEF0;
+            --md-on-surface: #121620;
+            --md-on-surface-variant: #5A6478;
+            --md-outline: #9AA6BE;
+            --md-outline-variant: #D2DEEE;
+            --md-secondary-container: #DBE6F5;
+            --md-on-secondary-container: #121620;
+            --md-state-hover: rgba(0,0,0,0.05);
+            --md-state-press: rgba(0,0,0,0.10);
+        }
+
         body {
             font-family: 'Roboto', Arial, sans-serif;
             background: #000000;
@@ -89,8 +166,16 @@
             display: flex;
             flex-direction: column;
             background: var(--md-surface);
+            color: var(--md-on-surface); /* re-resolve per theme so inherited text adapts */
+            /* Re-declare legacy aliases here so they resolve with the per-theme --md-* tokens
+               (declaring them only on :root bakes the dark values and ignores .app overrides) */
+            --yt-text-primary: var(--md-on-surface);
+            --yt-text-secondary: var(--md-on-surface-variant);
+            --yt-divider: var(--md-outline-variant);
+            --yt-hover: var(--md-state-hover);
             border-radius: 40px; /* Moved border radius here to maintain rounded corners */
             overflow: hidden; /* Clip content but tooltips are outside .app */
+            transition: background 0.25s ease, color 0.25s ease;
         }
 
         /* YouTube Header */
@@ -1303,6 +1388,12 @@
 
         .yt-nav-item.active .yt-nav-label {
             font-weight: 500;
+        }
+
+        .yt-nav-item.disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         /* Badge Counter */
@@ -2694,6 +2785,7 @@
         // App State
         let state = {
             currentScreen: 'home',
+            theme: 'dark', // 'dark' | 'light' — manual toggle
             selectedChip: 'all',
             isTrailFeed: false,
             activeTrail: 'Web Development Mastery', // Default trail
@@ -3058,6 +3150,10 @@
                         <div class="tooltip-small">${regular ? 'Regular feed' : 'Trail feed'}</div>
                     </div>
                     <div class="yt-header-actions">
+                        <button class="yt-icon-btn has-tooltip-small" onclick="toggleTheme()">
+                            <span class="material-icons">${state.theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
+                            <div class="tooltip-small">${state.theme === 'dark' ? 'Light mode' : 'Dark mode'}</div>
+                        </button>
                         <button class="yt-icon-btn">
                             <span class="material-icons">cast</span>
                         </button>
@@ -4273,9 +4369,9 @@
             // YouTube's original bottom navigation for Regular Feed
             const youtubeNavItems = [
                 { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: 'Home' },
-                { id: 'shorts', screen: 'shorts', icon: 'video_library', label: 'Shorts', tooltip: 'Shorts' },
+                { id: 'shorts', screen: 'shorts', icon: 'video_library', label: 'Shorts', tooltip: 'Coming soon', disabled: true },
                 { id: 'create', screen: 'createtrail', icon: 'add_circle_outline', label: 'Create trail', tooltip: 'Create trail' },
-                { id: 'subscriptions', screen: 'subscriptions', icon: 'subscriptions', label: 'Subscriptions', tooltip: 'Subscriptions' },
+                { id: 'subscriptions', screen: 'subscriptions', icon: 'subscriptions', label: 'Subscriptions', tooltip: 'Coming soon', disabled: true },
                 { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: 'You' },
             ];
 
@@ -4294,8 +4390,8 @@
             return `
                 <div class="yt-bottom-nav">
                     ${navItems.map(item => `
-                        <button class="yt-nav-item has-tooltip-small ${state.currentBottomTab === item.id ? 'active' : ''}" 
-                                onclick="changeBottomTab('${item.id}', '${item.screen}')">
+                        <button class="yt-nav-item has-tooltip-small ${state.currentBottomTab === item.id ? 'active' : ''} ${item.disabled ? 'disabled' : ''}"
+                                ${item.disabled ? 'disabled aria-disabled="true"' : `onclick="changeBottomTab('${item.id}', '${item.screen}')"`}>
                             <span class="material-icons">${item.icon}</span>
                             ${item.label ? `<span class="yt-nav-label">${item.label}</span>` : ''}
                             ${item.badge ? `<span class="nav-badge">${item.badge}</span>` : ''}
@@ -4307,6 +4403,11 @@
         }
 
         // Actions
+        function toggleTheme() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            render();
+        }
+
         function changeScreen(screen) {
             state.currentScreen = screen;
             render();
@@ -5015,8 +5116,11 @@
         }
 
         function render() {
-            document.getElementById('app').innerHTML = renderApp();
-            
+            const appEl = document.getElementById('app');
+            // Theme (light/dark) x feed (regular/trail) drive the tinted background + coordinated surfaces
+            appEl.className = 'app theme-' + (state.theme || 'dark') + ' feed-' + (state.isTrailFeed ? 'trail' : 'regular');
+            appEl.innerHTML = renderApp();
+
             // Initialize tooltips after DOM is ready
             setTimeout(() => {
                 initializeTooltips();
