@@ -321,11 +321,11 @@
             z-index: 250; /* Default lower z-index - will be dynamically changed by JS */
             display: flex;
             gap: 8px;
-            padding: 12px 16px;
+            padding: 8px 16px;
             overflow-x: auto;
             overflow-y: visible; /* Allow tooltips to show above */
             background: var(--md-surface);
-            margin-top: -1px; /* Overlap with slider when expanded */
+            margin-top: 0;
         }
 
 
@@ -2595,6 +2595,26 @@
             },
         ];
 
+        // Regular feed — "Following" chip: content from channels you'd subscribe to
+        const followingFeedVideos = [
+            { id: 'f1', title: 'The Best Pasta Carbonara You\'ll Ever Make', channel: 'Babish Culinary Universe', duration: '13:42', tags: ['Cooking', 'Italian', 'Recipe'], views: '3.4M views', time: '2 days ago', color: '#FFB74D' },
+            { id: 'f2', title: 'How Black Holes Bend Reality', channel: 'Veritasium', duration: '21:18', tags: ['Space', 'Physics', 'Science'], views: '6.1M views', time: '5 days ago', color: '#7986CB' },
+            { id: 'f3', title: '1 Hour of Relaxing Lofi Beats to Focus', channel: 'Lofi Girl', duration: '1:02:00', tags: ['Music', 'Lofi', 'Study'], views: '1.2M views', time: '1 week ago', color: '#9575CD' },
+            { id: 'f4', title: 'Full Body Home Workout — No Equipment', channel: 'FitnessBlender', duration: '28:30', tags: ['Fitness', 'Workout', 'Home'], views: '892K views', time: '3 days ago', color: '#4DB6AC' },
+            { id: 'f5', title: '48 Hours in Kyoto, Japan', channel: 'Kara and Nate', duration: '19:55', tags: ['Travel', 'Japan', 'Vlog'], views: '1.5M views', time: '6 days ago', color: '#4FC3F7' },
+            { id: 'f6', title: 'Planet Earth: Most Beautiful Places in 4K', channel: 'BBC Earth', duration: '24:10', tags: ['Nature', 'Documentary', '4K'], views: '4.8M views', time: '1 week ago', color: '#81C784' },
+        ];
+
+        // Regular feed — "Trending" chip: broad popular content trending now
+        const trendingFeedVideos = [
+            { id: 't1', title: 'Top 10 Goals of the Season', channel: 'Sports Center', duration: '12:08', tags: ['Sports', 'Football', 'Highlights'], views: '8.9M views', time: '1 day ago', color: '#66BB6A' },
+            { id: 't2', title: 'I Built a Tiny House in 7 Days', channel: 'DIY Builds', duration: '26:44', tags: ['DIY', 'Building', 'Project'], views: '5.2M views', time: '2 days ago', color: '#A1887F' },
+            { id: 't3', title: 'Making the World\'s Largest Pizza', channel: 'Guga Foods', duration: '17:31', tags: ['Food', 'Challenge', 'Cooking'], views: '6.7M views', time: '3 days ago', color: '#FF8A65' },
+            { id: 't4', title: 'How AI Is Changing Everything in 2026', channel: 'ColdFusion', duration: '20:12', tags: ['Tech', 'AI', 'Future'], views: '3.3M views', time: '1 day ago', color: '#64B5F6' },
+            { id: 't5', title: 'Golden Retriever Puppies — Cutest Compilation', channel: 'The Pet Collective', duration: '10:25', tags: ['Pets', 'Dogs', 'Cute'], views: '2.1M views', time: '4 days ago', color: '#FFD54F' },
+            { id: 't6', title: 'Epic Drone Flight Over the Swiss Alps', channel: 'Drone Nature', duration: '8:50', tags: ['Travel', 'Drone', 'Nature'], views: '1.9M views', time: '2 days ago', color: '#4DD0E1' },
+        ];
+
         const mockParkedVideos = [
             {
                 id: 'p1',
@@ -3244,7 +3264,7 @@
             return `
                 <div class="yt-banner">
                     <div class="yt-banner-header">
-                        <span class="yt-banner-icon">🧘</span>
+                        <span class="material-icons yt-banner-icon" style="color: var(--yt-blue);">route</span>
                         <div class="yt-banner-text">
                             <h3>Organize into a Trail?</h3>
                             <p>You've watched more than 7 videos on Yoga. Want to organize these into a Trail?</p>
@@ -3358,9 +3378,14 @@
 
         function renderVideos() {
             // Get videos based on feed type
-            const videos = state.isTrailFeed 
-                ? trailVideos[state.activeTrail] 
-                : regularFeedVideos;
+            const regularFeedByChip = {
+                following: followingFeedVideos,
+                trending: trendingFeedVideos,
+                all: regularFeedVideos,
+            };
+            const videos = state.isTrailFeed
+                ? trailVideos[state.activeTrail]
+                : (regularFeedByChip[state.selectedChip] || regularFeedVideos);
             
             return videos.map(video => {
                 // Get video color
@@ -3949,7 +3974,7 @@
                                     <div style="flex: 1; background: var(--md-surface-container); border: 2px solid ${state.createTrailData.leftTopic ? 'var(--yt-blue)' : 'var(--md-outline-variant)'}; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease;"
                                          onclick="showCreateTrailTopicMap('left')">
                                         <div style="font-size: 24px; margin-bottom: 8px;">
-                                            ${state.createTrailData.leftTopic ? state.createTrailData.leftTopic.charAt(0) : '📚'}
+                                            ${state.createTrailData.leftTopic ? state.createTrailData.leftTopic.charAt(0) : '<span class="material-icons" style="font-size: 24px; color: var(--yt-text-secondary);">add</span>'}
                                         </div>
                                         <div style="font-size: 12px; font-weight: 500; color: ${state.createTrailData.leftTopic ? 'var(--yt-text-primary)' : 'var(--yt-text-secondary)'};">
                                             ${state.createTrailData.leftTopic || 'Select Topic'}
@@ -3965,7 +3990,7 @@
                                     <div style="flex: 1; background: var(--md-surface-container); border: 2px solid ${state.createTrailData.rightTopic ? 'var(--yt-blue)' : 'var(--md-outline-variant)'}; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease;"
                                          onclick="showCreateTrailTopicMap('right')">
                                         <div style="font-size: 24px; margin-bottom: 8px;">
-                                            ${state.createTrailData.rightTopic ? state.createTrailData.rightTopic.charAt(0) : '📚'}
+                                            ${state.createTrailData.rightTopic ? state.createTrailData.rightTopic.charAt(0) : '<span class="material-icons" style="font-size: 24px; color: var(--yt-text-secondary);">add</span>'}
                                         </div>
                                         <div style="font-size: 12px; font-weight: 500; color: ${state.createTrailData.rightTopic ? 'var(--yt-text-primary)' : 'var(--yt-text-secondary)'};">
                                             ${state.createTrailData.rightTopic || 'Select Topic'}
@@ -3998,7 +4023,7 @@
 
                         <div style="padding: 16px; background: rgba(62,166,255,0.14); margin: 0 16px; border-radius: 12px;">
                             <p style="font-size: 13px; line-height: 18px; color: var(--yt-text-secondary);">
-                                💡 Your trail will recommend videos based on these settings. You can adjust them later.
+                                Your trail will recommend videos based on these settings. You can adjust them later.
                             </p>
                         </div>
                     </div>
@@ -4249,7 +4274,7 @@
             const youtubeNavItems = [
                 { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: 'Home' },
                 { id: 'shorts', screen: 'shorts', icon: 'video_library', label: 'Shorts', tooltip: 'Shorts' },
-                { id: 'create', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: 'Create' },
+                { id: 'create', screen: 'createtrail', icon: 'add_circle_outline', label: 'Create trail', tooltip: 'Create trail' },
                 { id: 'subscriptions', screen: 'subscriptions', icon: 'subscriptions', label: 'Subscriptions', tooltip: 'Subscriptions' },
                 { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: 'You' },
             ];
@@ -4258,7 +4283,7 @@
             const trailNavItems = [
                 { id: 'home', screen: 'home', icon: 'home', label: 'Home', tooltip: 'Home' },
                 { id: 'trails', screen: 'mytrails', icon: 'play_circle', label: 'Trails', tooltip: 'My Trails', badge: trailsCount > 0 ? trailsCount : null },
-                { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: '', tooltip: 'Create Trail' },
+                { id: 'add', screen: 'createtrail', icon: 'add_circle_outline', label: 'Create trail', tooltip: 'Create trail' },
                 { id: 'parked', screen: 'parked', icon: 'bookmark_border', label: 'Parked', tooltip: 'Parked', badge: parkedCount > 0 ? parkedCount : null },
                 { id: 'profile', screen: 'profile', icon: 'account_circle', label: 'You', tooltip: 'You' },
             ];
